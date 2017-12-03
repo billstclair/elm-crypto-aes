@@ -27,14 +27,10 @@ Based on [cl-cryto](https://github.com/billstclair/cl-crypto)'s [aes16.lisp](htt
 
 -}
 
+import AES.Types exposing (Keys)
+import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, get, length, repeat, set)
-
-
-type alias Keys =
-    { numRounds : Int
-    , forwardKey : Array Int
-    , reverseKey : Array Int
-    }
+import BitwiseInfix exposing (..)
 
 
 {-| Encrypt the 16-element Array with the Key
