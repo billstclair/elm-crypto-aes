@@ -12,6 +12,7 @@
 
 module AES.Block exposing (..)
 
+import AES.Tables exposing (..)
 import AES.Types exposing (Keys)
 import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, length, repeat, set)

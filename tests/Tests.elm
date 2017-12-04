@@ -2,6 +2,7 @@ module Tests exposing (all)
 
 import AES exposing (..)
 import AES.Block exposing (expandKeyString4Sure)
+import AES.Tables exposing (..)
 import AES.Types exposing (..)
 import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, repeat)
