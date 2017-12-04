@@ -130,7 +130,7 @@ expandKeyInternal rawkey numWords numRounds =
                                 get (i - numWords) res
                                     ~^ (if 0 == i % numWords then
                                             get (numWords // i - 1) rcon_
-                                                ~^ subWord32 (rotWord32 <| get (i - 1) res)
+                                                ~^ subWord32 (rotWord32L <| get (i - 1) res)
                                         else if numWords > 6 && 4 == i % numWords then
                                             subWord32 <| get (i - 1) res
                                         else

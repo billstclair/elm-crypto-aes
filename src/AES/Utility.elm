@@ -71,8 +71,8 @@ word1 x =
 
 {-| rot-uint-32-L, but only handles n = 8
 -}
-rotWord32 : Int -> Int
-rotWord32 word =
+rotWord32L : Int -> Int
+rotWord32L word =
     ((word ~& 0x00FFFFFF) ~<< 8)
         + ((word ~>> 24) ~& 0xFF)
 

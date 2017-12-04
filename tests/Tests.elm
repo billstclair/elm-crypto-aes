@@ -68,35 +68,35 @@ doTest ( name, was, sb ) =
 
 
 lo1 =
-    128 + 1
+    0x81
 
 
 hi1 =
-    128 + 3
+    0x83
 
 
 lo2 =
-    128 + 64 + 1
+    0xC1
 
 
 hi2 =
-    128 + 64 + 3
+    0xC3
 
 
 lo3 =
-    128 + 64 + 4 + 1
+    0xC5
 
 
 hi3 =
-    128 + 64 + 4 + 3
+    0xC7
 
 
 lo4 =
-    128 + 64 + 8 + 4 + 1
+    0xCD
 
 
 hi4 =
-    128 + 64 + 8 + 4 + 3
+    0xCF
 
 
 word1 =
@@ -109,7 +109,10 @@ intData =
     , ( "lobyte", lobyte word1, lo1 )
     , ( "hibyte", hibyte word1, hi1 )
     , ( "swapbytes", swapbytes word1, makeword lo1 hi1 )
-    , ( "rotWord32", rotWord32 0x12345678, 878082066 )
+    , ( "rotWord32L"
+      , rotWord32L <| makeWord32 hi1 lo1 hi2 lo2
+      , makeWord32 lo1 hi2 lo2 hi1
+      )
     , ( "makeWordFromByteArray"
       , makeWordFromByteArray 1 <| fromList [ 0, hi1, lo1, 0 ]
       , word1
@@ -118,7 +121,7 @@ intData =
     , ( "subWord32", subWord32 (makeWord32 hi1 lo1 hi2 lo2), -334745992 )
     , ( "makeWord32FromByteArray"
       , makeWord32FromByteArray 2 <| fromList [ 0, 0, hi1, lo1, hi2, lo2, 0, 0 ]
-      , -2088647743
+      , makeWord32 hi1 lo1 hi2 lo2
       )
     ]
 
