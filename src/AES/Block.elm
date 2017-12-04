@@ -440,8 +440,9 @@ encrypt keys ina =
                     loop (1 + i) (8 + rkix) <|
                         fRound keya rkix ws
     in
-    loop 1 8 (loadKeys ina keya)
+    loop 2 8 (loadKeys ina keya)
         |> fRound keya (8 * (numRounds - 1))
+        |> lastFRound keya (8 * numRounds)
         |> fillByteArrayFromFourPairs
 
 
