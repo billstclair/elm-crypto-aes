@@ -27,4 +27,4 @@ install:
 
 
 script:
-  - elm-test
+  - elm make --yes && elm-test

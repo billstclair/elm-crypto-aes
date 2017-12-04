@@ -1,7 +1,7 @@
 module Tests exposing (all)
 
-import AES exposing (..)
-import AES.Block exposing (FourPairs, expandKeyString4Sure, loadKeys)
+import AES exposing (decrypt, encrypt)
+import AES.Block exposing (FourPairs, expandKeyStringNow, loadKeys)
 import AES.Tables exposing (..)
 import AES.Types exposing (..)
 import AES.Utility exposing (..)
@@ -146,46 +146,49 @@ word4 =
 
 arrayData : List ( String, Array Int, Array Int )
 arrayData =
-    [ ( "rotatePairsRight"
-      , arrayRotatePairsRight <|
-            fromList [ word1, word2, word3, word4 ]
-      , fromList
-            [ makeword lo2 hi1
-            , makeword lo1 hi2
-            , makeword lo4 hi3
-            , makeword lo3 hi4
-            ]
-      )
-    , ( "ft3", ft3_, ft3_from_lisp )
-    , ( "kt3", kt3_, kt3_from_lisp )
-    , ( "makeBytesFromWord"
-      , makeBytesFromWord word1 1 (repeat 4 0)
-      , fromList [ 0, hi1, lo1, 0 ]
-      )
-    , ( "fillByteArrayFromWords"
-      , fillByteArrayFromWords [ word1, word2, word3, word4 ]
-      , fromList [ hi1, lo1, hi2, lo2, hi3, lo3, hi4, lo4 ]
-      )
-    , ( "word32ArrayToWordArray"
-      , word32ArrayToWordArray <|
-            fromList
-                [ makeWord32 hi1 lo1 hi2 lo2
-                , makeWord32 hi3 lo3 hi4 lo4
+    List.concat
+        [ [ ( "rotatePairsRight"
+            , arrayRotatePairsRight <|
+                fromList [ word1, word2, word3, word4 ]
+            , fromList
+                [ makeword lo2 hi1
+                , makeword lo1 hi2
+                , makeword lo4 hi3
+                , makeword lo3 hi4
                 ]
-      , fromList
-            [ makeword hi1 lo1
-            , makeword hi2 lo2
-            , makeword hi3 lo3
-            , makeword hi4 lo4
-            ]
-      )
-    , ( "key16ForwardKey", key16.forwardKey, key16ForwardKey )
-    , ( "key16ReverseKey", key16.reverseKey, key16ReverseKey )
-    , ( "key24ForwardKey", key24.forwardKey, key24ForwardKey )
-    , ( "key24ReverseKey", key24.reverseKey, key24ReverseKey )
-    , ( "key32ForwardKey", key32.forwardKey, key32ForwardKey )
-    , ( "key32ReverseKey", key32.reverseKey, key32ReverseKey )
-    ]
+            )
+          , ( "ft3", ft3_, ft3_from_lisp )
+          , ( "kt3", kt3_, kt3_from_lisp )
+          , ( "makeBytesFromWord"
+            , makeBytesFromWord word1 1 (repeat 4 0)
+            , fromList [ 0, hi1, lo1, 0 ]
+            )
+          , ( "fillByteArrayFromWords"
+            , fillByteArrayFromWords [ word1, word2, word3, word4 ]
+            , fromList [ hi1, lo1, hi2, lo2, hi3, lo3, hi4, lo4 ]
+            )
+          , ( "word32ArrayToWordArray"
+            , word32ArrayToWordArray <|
+                fromList
+                    [ makeWord32 hi1 lo1 hi2 lo2
+                    , makeWord32 hi3 lo3 hi4 lo4
+                    ]
+            , fromList
+                [ makeword hi1 lo1
+                , makeword hi2 lo2
+                , makeword hi3 lo3
+                , makeword hi4 lo4
+                ]
+            )
+          , ( "key16ForwardKey", key16.forwardKey, key16ForwardKey )
+          , ( "key16ReverseKey", key16.reverseKey, key16ReverseKey )
+          , ( "key24ForwardKey", key24.forwardKey, key24ForwardKey )
+          , ( "key24ReverseKey", key24.reverseKey, key24ReverseKey )
+          , ( "key32ForwardKey", key32.forwardKey, key32ForwardKey )
+          , ( "key32ReverseKey", key32.reverseKey, key32ReverseKey )
+          ]
+        , List.map encryptTest aesTestValues
+        ]
 
 
 fourPairData : List ( String, FourPairs, FourPairs )
@@ -204,6 +207,46 @@ fourPairData =
 ---
 
 
+type alias AesTest =
+    { pt : String --plain text
+    , key : String
+    , ct : String --cipher text
+    }
+
+
+aesTestValues : List AesTest
+aesTestValues =
+    [ { pt = "00112233445566778899aabbccddeeff"
+      , key = "000102030405060708090a0b0c0d0e0f"
+      , ct = "69c4e0d86a7b0430d8cdb78070b4c55a"
+      }
+    , { pt = "00112233445566778899aabbccddeeff"
+      , key = "000102030405060708090a0b0c0d0e0f1011121314151617"
+      , ct = "dda97ca4864cdfe06eaf70a0ec0d7191"
+      }
+    , { pt = "00112233445566778899aabbccddeeff"
+      , key = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      , ct = "8ea2b7ca516745bfeafc49904b496089"
+      }
+    ]
+
+
+encryptTest : AesTest -> ( String, Array Int, Array Int )
+encryptTest test =
+    ( "enc-" ++ test.ct
+    , encrypt (expandKeyStringNow test.key) (cb test.pt)
+    , cb test.ct
+    )
+
+
+decryptTest : AesTest -> ( String, Array Int, Array Int )
+decryptTest test =
+    ( "dec-" ++ test.ct
+    , decrypt (expandKeyStringNow test.key) (cb test.ct)
+    , cb test.pt
+    )
+
+
 msgBuf : Array Int
 msgBuf =
     fromList [ 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0 ]
@@ -216,7 +259,7 @@ key16Raw =
 
 key16 : Keys
 key16 =
-    expandKeyString4Sure key16Raw
+    expandKeyStringNow key16Raw
 
 
 key16NumRounds : Int
@@ -265,7 +308,7 @@ key24Raw =
 
 key24 : Keys
 key24 =
-    expandKeyString4Sure key24Raw
+    expandKeyStringNow key24Raw
 
 
 key24NumRounds : Int
@@ -318,7 +361,7 @@ key32Raw =
 
 key32 : Keys
 key32 =
-    expandKeyString4Sure key32Raw
+    expandKeyStringNow key32Raw
 
 
 key32NumRounds : Int

@@ -174,8 +174,8 @@ zeroKeys =
     }
 
 
-expandKeyString4Sure : String -> Keys
-expandKeyString4Sure string =
+expandKeyStringNow : String -> Keys
+expandKeyStringNow string =
     Result.withDefault zeroKeys <|
         expandKeyString string
 
@@ -411,11 +411,38 @@ loadKeys ina keys =
             ( ( 0, 0 ), ( 0, 0 ), ( 0, 0 ), ( 0, 0 ) )
 
 
+fillByteArrayFromFourPairs : FourPairs -> Array Int
+fillByteArrayFromFourPairs ws =
+    let
+        ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
+            ws
+    in
+    fillByteArrayFromWords [ w0h, w0l, w1h, w1l, w2h, w2l, w3h, w3l ]
+
+
 {-| Encrypt the 16-element Array with the Key
 -}
 encrypt : Keys -> Array Int -> Array Int
 encrypt keys ina =
-    ina
+    let
+        numRounds =
+            keys.numRounds
+
+        keya =
+            keys.forwardKey
+
+        loop : Int -> Int -> FourPairs -> FourPairs
+        loop =
+            \i rkix ws ->
+                if i >= numRounds then
+                    ws
+                else
+                    loop (1 + i) (8 + rkix) <|
+                        fRound keya rkix ws
+    in
+    loop 1 8 (loadKeys ina keya)
+        |> fRound keya (8 * (numRounds - 1))
+        |> fillByteArrayFromFourPairs
 
 
 {-| Decrypt the 16-element Array with the Key

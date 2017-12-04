@@ -164,6 +164,11 @@ hexStr2Array string =
     loop (String.toList string) []
 
 
+cb : String -> Array Int
+cb string =
+    Result.withDefault empty <| hexStr2Array string
+
+
 {-| make-bytes-from-uint-16
 -}
 makeBytesFromWord : Int -> Int -> Array Int -> Array Int
