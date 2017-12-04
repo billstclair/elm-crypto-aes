@@ -186,9 +186,21 @@ expandKeyString4Sure string =
 ---
 
 
+type alias Pair =
+    ( Int, Int )
+
+
+type alias Quartet =
+    ( Int, Int, Int, Int )
+
+
+type alias FourPairs =
+    ( Pair, Pair, Pair, Pair )
+
+
 {-| aes-round-step
 -}
-roundStep : ( Array Int, Array Int, Array Int, Array Int ) -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
+roundStep : ( Array Int, Array Int, Array Int, Array Int ) -> Pair -> Quartet -> Pair
 roundStep ( t0, t1, t2, t3 ) ( rkh, rkl ) ( b0, b1, b2, b3 ) =
     let
         g0 =
@@ -218,7 +230,7 @@ roundStep ( t0, t1, t2, t3 ) ( rkh, rkl ) ( b0, b1, b2, b3 ) =
 
 {-| aes-last-round-step
 -}
-lastRoundStep : Array Int -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
+lastRoundStep : Array Int -> Pair -> Quartet -> Pair
 lastRoundStep sb ( rkh, rkl ) ( b0, b1, b2, b3 ) =
     ( rkh
         ~^ (get b0 sb ~<< 8)
@@ -236,7 +248,7 @@ fts_ =
 
 {-| aes-f-round
 -}
-fRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+fRound : Array Int -> Int -> FourPairs -> FourPairs
 fRound keys rkix ws =
     let
         ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
@@ -267,7 +279,7 @@ fRound keys rkix ws =
 
 {-| aes-last-f-round
 -}
-lastFRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+lastFRound : Array Int -> Int -> FourPairs -> FourPairs
 lastFRound keys rkix ws =
     let
         ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
@@ -311,7 +323,7 @@ rts_ =
 
 {-| aes-r-round
 -}
-rRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+rRound : Array Int -> Int -> FourPairs -> FourPairs
 rRound keys rkix ws =
     let
         ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
@@ -342,7 +354,7 @@ rRound keys rkix ws =
 
 {-| aes-last-r-round
 -}
-lastRRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+lastRRound : Array Int -> Int -> FourPairs -> FourPairs
 lastRRound keys rkix ws =
     let
         ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
@@ -369,6 +381,34 @@ lastRRound keys rkix ws =
                 ( hibyte w3h, lobyte w2h, hibyte w1l, lobyte w0l )
     in
     ( x0, x1, x2, x3 )
+
+
+{-| with-init-aes-vars
+-}
+loadKeys : Array Int -> Array Int -> FourPairs
+loadKeys ina keys =
+    let
+        getOne : Int -> Int
+        getOne =
+            \idx ->
+                get idx keys
+                    ~^ makeWordFromByteArray (2 * idx) ina
+
+        f : Int -> List Pair -> List Pair
+        f =
+            \idx res ->
+                ( getOne idx, getOne <| idx + 1 ) :: res
+
+        list =
+            List.foldr f [] [ 0, 2, 4, 6 ]
+    in
+    case list of
+        [ a, b, c, d ] ->
+            ( a, b, c, d )
+
+        _ ->
+            -- Can't happen
+            ( ( 0, 0 ), ( 0, 0 ), ( 0, 0 ), ( 0, 0 ) )
 
 
 {-| Encrypt the 16-element Array with the Key

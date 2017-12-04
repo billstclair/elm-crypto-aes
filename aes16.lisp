@@ -978,8 +978,8 @@ hex string must be mulitple of 2"
 (defun ft3-to-elm (&optional (a +ft3+))
   (transform-32-bit-array a))
   
-(defun make-16-byte-key ()
-  (let ((rawkey (hex-str->bin-array "000102030405060708090a0b0c0d0e0f")))
+(defun make-key-from-hex-string (&optional (str "000102030405060708090a0b0c0d0e0f"))
+  (let ((rawkey (hex-str->bin-array str)))
     (aes-expand-key rawkey)))
 
 

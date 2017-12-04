@@ -1,7 +1,7 @@
 module Tests exposing (all)
 
 import AES exposing (..)
-import AES.Block exposing (expandKeyString4Sure)
+import AES.Block exposing (FourPairs, expandKeyString4Sure, loadKeys)
 import AES.Tables exposing (..)
 import AES.Types exposing (..)
 import AES.Utility exposing (..)
@@ -38,6 +38,7 @@ all =
         List.concat
             [ List.map doTest intData
             , List.map doTest arrayData
+            , List.map doTest fourPairData
             ]
 
 
@@ -187,11 +188,25 @@ arrayData =
     ]
 
 
+fourPairData : List ( String, FourPairs, FourPairs )
+fourPairData =
+    [ ( "loadKeys"
+      , loadKeys msgBuf key16.forwardKey
+      , ( ( 257, 3 ), ( 1797, 519 ), ( 3337, 3083 ), ( 2829, 1551 ) )
+      )
+    ]
+
+
 
 ---
 --- expandKeyString results below.
 --- From (aes-expand-key-string ...) on aes16.lisp and some emacs keyboard macros.
 ---
+
+
+msgBuf : Array Int
+msgBuf =
+    fromList [ 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0 ]
 
 
 key16Raw : String
