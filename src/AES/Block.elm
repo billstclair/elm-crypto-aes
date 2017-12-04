@@ -158,7 +158,12 @@ expandKeyInternal rawkey numWords numRounds =
 
 expandKeyString : String -> Result String Keys
 expandKeyString hex =
-    expandKey <| hexStr2Array hex
+    case hexStr2Array hex of
+        Err msg ->
+            Err msg
+
+        Ok rawkey ->
+            expandKey rawkey
 
 
 zeroKeys : Keys

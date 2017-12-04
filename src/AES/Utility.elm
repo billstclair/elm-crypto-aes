@@ -128,31 +128,38 @@ arrayRotatePairsRight gin =
 ---
 
 
-hexStr2Int : String -> Int
+hexStr2Int : String -> Result String Int
 hexStr2Int str =
-    Result.withDefault 0 <|
-        String.toInt ("0x" ++ str)
+    String.toInt ("0x" ++ str)
 
 
-hexChars2Int : Char -> Char -> Int
+hexChars2Int : Char -> Char -> Result String Int
 hexChars2Int x y =
     hexStr2Int <| String.fromList [ x, y ]
 
 
 {-| hex-str->bin-array
 -}
-hexStr2Array : String -> Array Int
+hexStr2Array : String -> Result String (Array Int)
 hexStr2Array string =
     let
-        loop : List Char -> List Int -> Array Int
+        loop : List Char -> List Int -> Result String (Array Int)
         loop =
             \chars res ->
                 case chars of
                     x :: y :: tail ->
-                        loop tail <| hexChars2Int x y :: res
+                        case hexChars2Int x y of
+                            Err msg ->
+                                Err msg
+
+                            Ok int ->
+                                loop tail <| int :: res
+
+                    [ _ ] ->
+                        Err "Odd length string."
 
                     _ ->
-                        fromList <| List.reverse res
+                        Ok (fromList <| List.reverse res)
     in
     loop (String.toList string) []
 
