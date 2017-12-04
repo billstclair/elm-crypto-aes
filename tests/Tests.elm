@@ -30,15 +30,6 @@ maybeLog label value =
         value
 
 
-testMap : (x -> String -> Test) -> List x -> List Test
-testMap test data =
-    let
-        numbers =
-            List.map toString <| List.range 1 (List.length data)
-    in
-    List.map2 test data numbers
-
-
 all : Test
 all =
     Test.concat <|
@@ -118,6 +109,7 @@ intData =
     , ( "lobyte", lobyte word1, lo1 )
     , ( "hibyte", hibyte word1, hi1 )
     , ( "swapbytes", swapbytes word1, makeword lo1 hi1 )
+    , ( "rotWord32", rotWord32 0x12345678, 878082066 )
     , ( "makeWordFromByteArray"
       , makeWordFromByteArray 1 <| fromList [ 0, hi1, lo1, 0 ]
       , word1

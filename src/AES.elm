@@ -15,6 +15,7 @@ module AES
         ( decrypt
         , encrypt
         , expandKey
+        , expandKeyString
         )
 
 {-| A pure Elm implementation of Rijndael, the Advanced Encryption Standard (AES).
@@ -24,32 +25,37 @@ Based on [cl-cryto](https://github.com/billstclair/cl-crypto)'s [aes16.lisp](htt
 
 # Functions
 
-@docs expandKey, encrypt, decrypt
+@docs expandKey, expandKeyString, encrypt, decrypt
 
 -}
 
-import AES.Block exposing (decrypt, encrypt, expandKey)
+import AES.Block
 import AES.Types exposing (Keys)
-import AES.Utility exposing (..)
-import Array exposing (Array, empty, fromList, get, length, repeat, set)
-import BitwiseInfix exposing (..)
+import Array exposing (Array)
 
 
 {-| Expand a raw key array.
 -}
-expandKey : Array Int -> Keys
+expandKey : Array Int -> Result String Keys
 expandKey =
     AES.Block.expandKey
 
 
-{-| Encrypt the 16-element Array with the Key
+{-| Expand a raw key represented as a string of Hex characters.
+-}
+expandKeyString : String -> Result String Keys
+expandKeyString =
+    AES.Block.expandKeyString
+
+
+{-| Encrypt the 16-element Array with the Keys
 -}
 encrypt : Keys -> Array Int -> Array Int
 encrypt =
     AES.Block.encrypt
 
 
-{-| Decrypt the 16-element Array with the Key
+{-| Decrypt the 16-element Array with the Keys
 -}
 decrypt : Keys -> Array Int -> Array Int
 decrypt =

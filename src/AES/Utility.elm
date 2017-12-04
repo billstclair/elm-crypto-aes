@@ -69,6 +69,14 @@ word1 x =
     (x ~>> 16) ~& 65535
 
 
+{-| rot-uint-32-L, but only handles n = 8
+-}
+rotWord32 : Int -> Int
+rotWord32 word =
+    ((word ~& 0x00FFFFFF) ~<< 8)
+        + ((word ~>> 24) ~& 0xFF)
+
+
 {-| Returns new array with right byte rotation across two adjacent uint-16 values.
 
 array-rotate-uint-16-pairs-right
@@ -426,6 +434,35 @@ kt3_ =
 ---
 --- AES Support Routines
 ---
+
+
+hexStr2Int : String -> Int
+hexStr2Int str =
+    Result.withDefault 0 <|
+        String.toInt ("0x" ++ str)
+
+
+hexChars2Int : Char -> Char -> Int
+hexChars2Int x y =
+    hexStr2Int <| String.fromList [ x, y ]
+
+
+{-| hex-str->bin-array
+-}
+hexStr2Array : String -> Array Int
+hexStr2Array string =
+    let
+        loop : List Char -> List Int -> Array Int
+        loop =
+            \chars res ->
+                case chars of
+                    x :: y :: tail ->
+                        loop tail <| hexChars2Int x y :: res
+
+                    _ ->
+                        fromList <| List.reverse res
+    in
+    loop (String.toList string) []
 
 
 {-| make-bytes-from-uint-16

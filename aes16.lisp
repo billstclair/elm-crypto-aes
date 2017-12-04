@@ -961,6 +961,10 @@ hex string must be mulitple of 2"
 (defun ft3-to-elm (&optional (a +ft3+))
   (transform-32-bit-array a))
   
+(defun make-16-byte-key ()
+  (let ((rawkey (hex-str->bin-array "000102030405060708090a0b0c0d0e0f")))
+    (aes-expand-key rawkey)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
