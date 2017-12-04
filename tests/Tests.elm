@@ -143,24 +143,20 @@ word4 =
     makeword hi4 lo4
 
 
-array =
-    fromList [ word1, word2, word3, word4 ]
-
-
-array_rotatePairsRight =
-    fromList
-        [ makeword lo2 hi1
-        , makeword lo1 hi2
-        , makeword lo4 hi3
-        , makeword lo3 hi4
-        ]
-
-
 arrayData : List ( String, Array Int, Array Int )
 arrayData =
-    [ ( "rotatePairsRight", arrayRotatePairsRight array, array_rotatePairsRight )
-    , ( "ft3", ft3_, ft3 )
-    , ( "kt3", kt3_, kt3 )
+    [ ( "rotatePairsRight"
+      , arrayRotatePairsRight <|
+            fromList [ word1, word2, word3, word4 ]
+      , fromList
+            [ makeword lo2 hi1
+            , makeword lo1 hi2
+            , makeword lo4 hi3
+            , makeword lo3 hi4
+            ]
+      )
+    , ( "ft3", ft3_, ft3_from_lisp )
+    , ( "kt3", kt3_, kt3_from_lisp )
     , ( "makeBytesFromWord"
       , makeBytesFromWord word1 1 (repeat 4 0)
       , fromList [ 0, hi1, lo1, 0 ]
@@ -186,13 +182,15 @@ arrayData =
 
 
 
-{- Big arrays below here. Not interesting. -}
+---
+--- Big arrays below here. Move along. Nothing too see.
+---
 
 
 {-| Computed by (ft3-to-elm) in aes16.lisp
 -}
-ft3 : Array Int
-ft3 =
+ft3_from_lisp : Array Int
+ft3_from_lisp =
     fromList <|
         List.concat
             [ [ 25443, 42438, 31868, 34040, 30583, 39406, 31611, 36342, 62194 ]
@@ -257,8 +255,8 @@ ft3 =
 
 {-| Computed by (kt3-to-elm) in aes16.lisp
 -}
-kt3 : Array Int
-kt3 =
+kt3_from_lisp : Array Int
+kt3_from_lisp =
     fromList <|
         List.concat
             [ [ 0, 151849742, 303699484, 454499602, 607398968, 758720310, 908999204 ]
