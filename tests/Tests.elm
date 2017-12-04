@@ -1,6 +1,7 @@
 module Tests exposing (all)
 
 import AES exposing (..)
+import AES.Block exposing (expandKeyString4Sure)
 import AES.Types exposing (..)
 import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, repeat)
@@ -192,14 +193,6 @@ arrayData =
 ---
 
 
-zeroKeys : Keys
-zeroKeys =
-    { numRounds = 0
-    , forwardKey = empty
-    , reverseKey = empty
-    }
-
-
 key16Raw : String
 key16Raw =
     "000102030405060708090a0b0c0d0e0f"
@@ -207,8 +200,7 @@ key16Raw =
 
 key16 : Keys
 key16 =
-    Result.withDefault zeroKeys <|
-        expandKeyString key16Raw
+    expandKeyString4Sure key16Raw
 
 
 key16NumRounds : Int
@@ -259,8 +251,7 @@ key24Raw =
 
 key24 : Keys
 key24 =
-    Result.withDefault zeroKeys <|
-        expandKeyString key24Raw
+    expandKeyString4Sure key24Raw
 
 
 key24NumRounds : Int
@@ -315,8 +306,7 @@ key32Raw =
 
 key32 : Keys
 key32 =
-    Result.withDefault zeroKeys <|
-        expandKeyString key32Raw
+    expandKeyString4Sure key32Raw
 
 
 key32NumRounds : Int

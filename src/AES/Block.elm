@@ -160,6 +160,20 @@ expandKeyString hex =
     expandKey <| hexStr2Array hex
 
 
+zeroKeys : Keys
+zeroKeys =
+    { numRounds = 0
+    , forwardKey = empty
+    , reverseKey = empty
+    }
+
+
+expandKeyString4Sure : String -> Keys
+expandKeyString4Sure string =
+    Result.withDefault zeroKeys <|
+        expandKeyString string
+
+
 {-| Encrypt the 16-element Array with the Key
 -}
 encrypt : Keys -> Array Int -> Array Int
