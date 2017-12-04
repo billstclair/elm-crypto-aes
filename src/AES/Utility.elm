@@ -16,9 +16,17 @@ import Array exposing (Array, empty, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
 
 
+{-| Out of bounds array references return 0.
+
+Don't be naughty.
+
+Maybe they should Debug.crash, but that's not nice.
+
+-}
 get : Int -> Array Int -> Int
 get idx array =
-    Maybe.withDefault 0 (Array.get idx array)
+    Maybe.withDefault 0 <|
+        Array.get idx array
 
 
 lobyte : Int -> Int
