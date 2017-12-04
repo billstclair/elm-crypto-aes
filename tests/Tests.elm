@@ -188,6 +188,7 @@ arrayData =
           , ( "key32ReverseKey", key32.reverseKey, key32ReverseKey )
           ]
         , List.map encryptTest aesTestValues
+        , List.map decryptTest aesTestValues
         ]
 
 

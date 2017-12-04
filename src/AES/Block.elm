@@ -420,16 +420,14 @@ fillByteArrayFromFourPairs ws =
     fillByteArrayFromWords [ w0h, w0l, w1h, w1l, w2h, w2l, w3h, w3l ]
 
 
-{-| Encrypt the 16-element Array with the Key
--}
-encrypt : Keys -> Array Int -> Array Int
-encrypt keys ina =
+cryptor : (Keys -> Array Int) -> (Array Int -> Int -> FourPairs -> FourPairs) -> (Array Int -> Int -> FourPairs -> FourPairs) -> Keys -> Array Int -> Array Int
+cryptor keyGetter round lastRound keys ina =
     let
         numRounds =
             keys.numRounds
 
         keya =
-            keys.forwardKey
+            keyGetter keys
 
         loop : Int -> Int -> FourPairs -> FourPairs
         loop =
@@ -438,16 +436,22 @@ encrypt keys ina =
                     ws
                 else
                     loop (1 + i) (8 + rkix) <|
-                        fRound keya rkix ws
+                        round keya rkix ws
     in
     loop 2 8 (loadKeys ina keya)
-        |> fRound keya (8 * (numRounds - 1))
-        |> lastFRound keya (8 * numRounds)
+        |> round keya (8 * (numRounds - 1))
+        |> lastRound keya (8 * numRounds)
         |> fillByteArrayFromFourPairs
+
+
+{-| Encrypt the 16-element Array with the Key
+-}
+encrypt : Keys -> Array Int -> Array Int
+encrypt =
+    cryptor .forwardKey fRound lastFRound
 
 
 {-| Decrypt the 16-element Array with the Key
 -}
-decrypt : Keys -> Array Int -> Array Int
-decrypt keys ina =
-    ina
+decrypt =
+    cryptor .reverseKey rRound lastRRound
