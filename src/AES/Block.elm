@@ -180,6 +180,81 @@ expandKeyString4Sure string =
         expandKeyString string
 
 
+{-| aes-round-step
+-}
+roundStep : ( Array Int, Array Int, Array Int, Array Int ) -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
+roundStep ( t0, t1, t2, t3 ) ( rkh, rkl ) ( b0, b1, b2, b3 ) =
+    let
+        g0 =
+            2 * b0
+
+        g1 =
+            2 * b1
+
+        g2 =
+            2 * b2
+
+        g3 =
+            2 * b3
+    in
+    ( rkh
+        ~^ get g0 t0
+        ~^ get g1 t1
+        ~^ get g2 t2
+        ~^ get g3 t3
+    , rkl
+        ~^ get (1 + g0) t0
+        ~^ get (1 + g1) t1
+        ~^ get (1 + g2) t2
+        ~^ get (1 + g3) t3
+    )
+
+
+lastRoundStep : Array Int -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
+lastRoundStep sb ( rkh, rkl ) ( b0, b1, b2, b3 ) =
+    ( rkh
+        ~^ (get b0 sb ~<< 8)
+        ~^ get b1 sb
+    , rkl
+        ~^ (get b2 sb ~<< 8)
+        ~^ get b3 sb
+    )
+
+
+fts_ : ( Array Int, Array Int, Array Int, Array Int )
+fts_ =
+    ( ft0_, ft1_, ft2_, ft3_ )
+
+
+fRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+fRound keys rkix ws =
+    let
+        ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
+            ws
+
+        x0 =
+            roundStep fts_
+                ( get rkix keys, get (1 + rkix) keys )
+                ( hibyte w0h, lobyte w1h, hibyte w2l, lobyte w3l )
+
+        x1 =
+            roundStep fts_
+                ( get (2 + rkix) keys, get (3 + rkix) keys )
+                ( hibyte w1h, lobyte w2h, hibyte w3l, lobyte w0l )
+
+        x2 =
+            roundStep fts_
+                ( get (4 + rkix) keys, get (5 + rkix) keys )
+                ( hibyte w2h, lobyte w3h, hibyte w0l, lobyte w1l )
+
+        x3 =
+            roundStep fts_
+                ( get (6 + rkix) keys, get (7 + rkix) keys )
+                ( hibyte w3h, lobyte w0h, hibyte w1l, lobyte w2l )
+    in
+    ( x0, x1, x2, x3 )
+
+
 {-| Encrypt the 16-element Array with the Key
 -}
 encrypt : Keys -> Array Int -> Array Int

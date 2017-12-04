@@ -5,7 +5,7 @@ cache:
     - tests/elm-stuff/build-artifacts
 
 os:
-  - osx
+#  - osx
   - linux
 
 env:
