@@ -180,6 +180,12 @@ expandKeyString4Sure string =
         expandKeyString string
 
 
+
+---
+--- AES encrypt/decrypt routines
+---
+
+
 {-| aes-round-step
 -}
 roundStep : ( Array Int, Array Int, Array Int, Array Int ) -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
@@ -210,6 +216,8 @@ roundStep ( t0, t1, t2, t3 ) ( rkh, rkl ) ( b0, b1, b2, b3 ) =
     )
 
 
+{-| aes-last-round-step
+-}
 lastRoundStep : Array Int -> ( Int, Int ) -> ( Int, Int, Int, Int ) -> ( Int, Int )
 lastRoundStep sb ( rkh, rkl ) ( b0, b1, b2, b3 ) =
     ( rkh
@@ -226,6 +234,8 @@ fts_ =
     ( ft0_, ft1_, ft2_, ft3_ )
 
 
+{-| aes-f-round
+-}
 fRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
 fRound keys rkix ws =
     let
@@ -251,6 +261,112 @@ fRound keys rkix ws =
             roundStep fts_
                 ( get (6 + rkix) keys, get (7 + rkix) keys )
                 ( hibyte w3h, lobyte w0h, hibyte w1l, lobyte w2l )
+    in
+    ( x0, x1, x2, x3 )
+
+
+{-| aes-last-f-round
+-}
+lastFRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+lastFRound keys rkix ws =
+    let
+        ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
+            ws
+
+        x0 =
+            lastRoundStep fsb_
+                ( get rkix keys, get (1 + rkix) keys )
+                ( hibyte w0h, lobyte w1h, hibyte w2l, lobyte w3l )
+
+        x1 =
+            lastRoundStep fsb_
+                ( get (2 + rkix) keys, get (3 + rkix) keys )
+                ( hibyte w1h, lobyte w2h, hibyte w3l, lobyte w0l )
+
+        x2 =
+            lastRoundStep fsb_
+                ( get (4 + rkix) keys, get (5 + rkix) keys )
+                ( hibyte w2h, lobyte w3h, hibyte w0l, lobyte w1l )
+
+        x3 =
+            lastRoundStep fsb_
+                ( get (6 + rkix) keys, get (7 + rkix) keys )
+                ( hibyte w3h
+                , lobyte w0h
+                , hibyte w1l
+                , lobyte w2l
+                )
+    in
+    ( x0, x1, x2, x3 )
+
+
+
+--- Reverse
+
+
+rts_ : ( Array Int, Array Int, Array Int, Array Int )
+rts_ =
+    ( rt0_, rt1_, rt2_, rt3_ )
+
+
+{-| aes-r-round
+-}
+rRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+rRound keys rkix ws =
+    let
+        ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
+            ws
+
+        x0 =
+            roundStep rts_
+                ( get rkix keys, get (1 + rkix) keys )
+                ( hibyte w0h, lobyte w3h, hibyte w2l, lobyte w1l )
+
+        x1 =
+            roundStep rts_
+                ( get (2 + rkix) keys, get (3 + rkix) keys )
+                ( hibyte w1h, lobyte w0h, hibyte w3l, lobyte w2l )
+
+        x2 =
+            roundStep rts_
+                ( get (4 + rkix) keys, get (5 + rkix) keys )
+                ( hibyte w2h, lobyte w1h, hibyte w0l, lobyte w3l )
+
+        x3 =
+            roundStep rts_
+                ( get (6 + rkix) keys, get (7 + rkix) keys )
+                ( hibyte w3h, lobyte w2h, hibyte w1l, lobyte w0l )
+    in
+    ( x0, x1, x2, x3 )
+
+
+{-| aes-last-r-round
+-}
+lastRRound : Array Int -> Int -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) ) -> ( ( Int, Int ), ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+lastRRound keys rkix ws =
+    let
+        ( ( w0h, w0l ), ( w1h, w1l ), ( w2h, w2l ), ( w3h, w3l ) ) =
+            ws
+
+        x0 =
+            lastRoundStep rsb_
+                ( get rkix keys, get (1 + rkix) keys )
+                ( hibyte w0h, lobyte w3h, hibyte w2l, lobyte w1l )
+
+        x1 =
+            lastRoundStep rsb_
+                ( get (2 + rkix) keys, get (3 + rkix) keys )
+                ( hibyte w1h, lobyte w0h, hibyte w3l, lobyte w2l )
+
+        x2 =
+            lastRoundStep rsb_
+                ( get (4 + rkix) keys, get (5 + rkix) keys )
+                ( hibyte w2h, lobyte w1h, hibyte w0l, lobyte w3l )
+
+        x3 =
+            lastRoundStep rsb_
+                ( get (6 + rkix) keys, get (7 + rkix) keys )
+                ( hibyte w3h, lobyte w2h, hibyte w1l, lobyte w0l )
     in
     ( x0, x1, x2, x3 )
 
