@@ -493,7 +493,7 @@ makeWord32FromByteArray offset array =
 
 
 ---
---- AES Key Expansion
+--- AES Key Expansion Support
 ---
 
 
