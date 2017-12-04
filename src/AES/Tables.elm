@@ -13,8 +13,30 @@
 module AES.Tables exposing (..)
 
 import AES.Utility exposing (..)
-import Array exposing (Array, empty, fromList, length, repeat, set)
+import Array exposing (Array, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
+
+
+---
+--- AES Support Routines
+---
+
+
+{-| sub-uint-32
+-}
+subWord32 : Int -> Int
+subWord32 w =
+    makeWord32
+        (get (byte3 w) fsb_)
+        (get (byte2 w) fsb_)
+        (get (byte1 w) fsb_)
+        (get (byte0 w) fsb_)
+
+
+
+---
+--- The tables
+---
 
 
 blockWords_ : Int
@@ -325,20 +347,3 @@ kt2_ =
 
 kt3_ =
     genKTable rt3_
-
-
-
----
---- AES Support Routines
----
-
-
-{-| sub-uint-32
--}
-subWord32 : Int -> Int
-subWord32 w =
-    makeWord32
-        (get (byte3 w) fsb_)
-        (get (byte2 w) fsb_)
-        (get (byte1 w) fsb_)
-        (get (byte0 w) fsb_)
