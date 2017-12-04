@@ -16,7 +16,12 @@ import AES.Types exposing (Keys)
 import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
+import Debug
 import List.Extra as LE
+
+
+dlog =
+    Debug.log
 
 
 {-| prepare-reverse-key
@@ -102,9 +107,7 @@ expandKey rawkey =
 
         Just ( _, numWords, numRounds ) ->
             Ok <|
-                expandKeyInternal rawkey
-                    numWords
-                    numRounds
+                expandKeyInternal rawkey numWords numRounds
 
 
 expandKeyInternal : Array Int -> Int -> Int -> Keys
@@ -129,7 +132,7 @@ expandKeyInternal rawkey numWords numRounds =
                         |> (set i <|
                                 get (i - numWords) res
                                     ~^ (if 0 == i % numWords then
-                                            get (numWords // i - 1) rcon_
+                                            get ((i // numWords) - 1) rcon_
                                                 ~^ subWord32 (rotWord32L <| get (i - 1) res)
                                         else if numWords > 6 && 4 == i % numWords then
                                             subWord32 <| get (i - 1) res

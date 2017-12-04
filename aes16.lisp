@@ -134,6 +134,16 @@
 )
 
 ;;;
+;;; New Elm-like log function
+;;;
+
+(defvar *enable-log* t)
+
+(defun dlog (label value)
+  (format t "~a: ~s~%" label (32-bit-to-negative value))
+  value)
+
+;;;
 ;;; Local declaims
 ;;;
 (declaim (type (simple-array uint-8)
@@ -553,6 +563,9 @@ inverse algorithm"
                           (aref +kt3+ (ldb (byte 8 0) tmp))))))))
     rkey))
 
+(defun aes-expand-key-string (string)
+  (aes-expand-key (hex-str->bin-array string)))
+
 (defun aes-expand-key (raw-key)
   (declare (type (simple-array uint-8) raw-key))
   (unless (member (array-total-size raw-key) '(16 24 32))
@@ -561,14 +574,16 @@ inverse algorithm"
          (num-rounds (case num-words (4 10) (6 12) (8 14)))
          (fkey (make-array (* +block-words+ (1+ num-rounds)))))
     (dotimes (i num-words)
-      (setf (aref fkey i) (make-uint-32-from-byte-array raw-key (* i 4))))
+      (setf (aref fkey i)
+            (make-uint-32-from-byte-array raw-key (* i 4))))
     (for (i num-words (1- (* +block-words+ (1+ num-rounds))))
       (setf (aref fkey i)
             (logxor (aref fkey (- i num-words))
                     (cond ((zerop (mod i num-words))
                            (logxor (nth (1- (/ i num-words)) +rcon+)
-                                   (sub-uint-32 (rot-uint-32-L
-                                              (aref fkey (1- i))))))
+                                   (sub-uint-32
+                                    (rot-uint-32-L
+                                     (aref fkey (1- i))))))
                           ((and (> num-words 6)
                                 (= 4 (mod i num-words)))
                            (sub-uint-32 (aref fkey (1- i))))
@@ -948,9 +963,11 @@ hex string must be mulitple of 2"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun 32-bit-to-negative (x)
-  (if (>= x (expt 2 31))
-      (- x (expt 2 32))
-      x))
+  (cond ((integerp x)
+         (if (>= x (expt 2 31))
+             (- x (expt 2 32))
+             x))
+        (t x)))
 
 (defun transform-32-bit-array (a)
   (map 'vector '32-bit-to-negative a))
