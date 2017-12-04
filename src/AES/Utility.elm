@@ -41,9 +41,37 @@ swapbytes x =
     ((x ~& 255) ~<< 8) ~| ((x ~>> 8) ~& 255)
 
 
+byte0 =
+    lobyte
+
+
+byte1 =
+    hibyte
+
+
+byte2 : Int -> Int
+byte2 x =
+    (x ~>> 16) ~& 255
+
+
+byte3 : Int -> Int
+byte3 x =
+    (x ~>> 24) ~& 255
+
+
+word0 : Int -> Int
+word0 x =
+    x ~& 65535
+
+
+word1 : Int -> Int
+word1 x =
+    (x ~>> 16) ~& 65535
+
+
 {-| Returns new array with right byte rotation across two adjacent uint-16 values.
 
-lisp: array-rotate-uint-16-pairs-right
+array-rotate-uint-16-pairs-right
 
 -}
 arrayRotatePairsRight : Array Int -> Array Int
@@ -80,7 +108,7 @@ arrayRotatePairsRight gin =
 
 {-| Generate helper tables for reverse key schedule using equivalent inverse algorithm.
 
-lisp: gen-k-table
+gen-k-table
 
 -}
 genKTable : Array Int -> Array Int
@@ -112,7 +140,7 @@ genKTable gin =
 
 
 ---
---- Constants
+--- Tables
 ---
 
 
@@ -392,3 +420,100 @@ kt2_ =
 
 kt3_ =
     genKTable rt3_
+
+
+
+---
+--- AES Support Routines
+---
+
+
+{-| make-bytes-from-uint-16
+-}
+makeBytesFromWord : Int -> Int -> Array Int -> Array Int
+makeBytesFromWord word offset array =
+    set offset (hibyte word) <|
+        set (offset + 1) (lobyte word) array
+
+
+{-| make-uint-16-from-byte-array
+-}
+makeWordFromByteArray : Int -> Array Int -> Int
+makeWordFromByteArray offset array =
+    makeword (get offset array) (get (offset + 1) array)
+
+
+{-| fill-byte-array-from-uint-16s
+-}
+fillByteArrayFromWords : List Int -> Array Int
+fillByteArrayFromWords words =
+    let
+        f : Int -> ( Int, Array Int ) -> ( Int, Array Int )
+        f =
+            \word ( idx, res ) ->
+                ( idx + 2, makeBytesFromWord word idx res )
+
+        out =
+            repeat (2 * List.length words) 0
+
+        ( _, res ) =
+            List.foldl f ( 0, out ) words
+    in
+    res
+
+
+{-| make-uint-32
+-}
+makeWord32 : Int -> Int -> Int -> Int -> Int
+makeWord32 b3 b2 b1 b0 =
+    (b3 ~<< 24) + (b2 ~<< 16) + (b1 ~<< 8) + b0
+
+
+{-| sub-uint-32
+-}
+subWord32 : Int -> Int
+subWord32 w =
+    makeWord32
+        (get (byte3 w) fsb_)
+        (get (byte2 w) fsb_)
+        (get (byte1 w) fsb_)
+        (get (byte0 w) fsb_)
+
+
+{-| make-uint-32-from-byte-array
+-}
+makeWord32FromByteArray : Int -> Array Int -> Int
+makeWord32FromByteArray offset array =
+    makeWord32
+        (get offset array)
+        (get (1 + offset) array)
+        (get (2 + offset) array)
+        (get (3 + offset) array)
+
+
+
+---
+--- AES Key Expansion
+---
+
+
+{-| uint-32-array->uint-16-array
+-}
+word32ArrayToWordArray : Array Int -> Array Int
+word32ArrayToWordArray a =
+    let
+        f : Int -> ( Int, Array Int ) -> ( Int, Array Int )
+        f =
+            \ai ( j, res ) ->
+                ( j + 2
+                , set j (word1 ai) res
+                    |> set (j + 1) (word0 ai)
+                )
+
+        out =
+            repeat (2 * length a) 0
+
+        ( _, res ) =
+            Array.foldl f ( 0, out ) a
+    in
+    res

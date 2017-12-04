@@ -3,7 +3,7 @@ module Tests exposing (all)
 import AES exposing (..)
 import AES.Types exposing (..)
 import AES.Utility exposing (..)
-import Array exposing (Array, fromList)
+import Array exposing (Array, fromList, repeat)
 import BitwiseInfix exposing (..)
 import Expect exposing (Expectation)
 import List
@@ -108,16 +108,26 @@ hi4 =
     128 + 64 + 8 + 4 + 3
 
 
-word =
+word1 =
     makeword hi1 lo1
 
 
 intData : List ( String, Int, Int )
 intData =
     [ ( "1+1", 1 + 1, 2 )
-    , ( "lobyte", lobyte word, lo1 )
-    , ( "hibyte", hibyte word, hi1 )
-    , ( "swapbytes", swapbytes word, makeword lo1 hi1 )
+    , ( "lobyte", lobyte word1, lo1 )
+    , ( "hibyte", hibyte word1, hi1 )
+    , ( "swapbytes", swapbytes word1, makeword lo1 hi1 )
+    , ( "makeWordFromByteArray"
+      , makeWordFromByteArray 1 <| fromList [ 0, hi1, lo1, 0 ]
+      , word1
+      )
+    , ( "makeWord32", makeWord32 hi1 lo1 hi2 lo2, -2088647743 )
+    , ( "subWord32", subWord32 (makeWord32 hi1 lo1 hi2 lo2), -334745992 )
+    , ( "makeWord32FromByteArray"
+      , makeWord32FromByteArray 2 <| fromList [ 0, 0, hi1, lo1, hi2, lo2, 0, 0 ]
+      , -2088647743
+      )
     ]
 
 
@@ -134,7 +144,7 @@ word4 =
 
 
 array =
-    fromList [ word, word2, word3, word4 ]
+    fromList [ word1, word2, word3, word4 ]
 
 
 array_rotatePairsRight =
@@ -151,6 +161,27 @@ arrayData =
     [ ( "rotatePairsRight", arrayRotatePairsRight array, array_rotatePairsRight )
     , ( "ft3", ft3_, ft3 )
     , ( "kt3", kt3_, kt3 )
+    , ( "makeBytesFromWord"
+      , makeBytesFromWord word1 1 (repeat 4 0)
+      , fromList [ 0, hi1, lo1, 0 ]
+      )
+    , ( "fillByteArrayFromWords"
+      , fillByteArrayFromWords [ word1, word2, word3, word4 ]
+      , fromList [ hi1, lo1, hi2, lo2, hi3, lo3, hi4, lo4 ]
+      )
+    , ( "word32ArrayToWordArray"
+      , word32ArrayToWordArray <|
+            fromList
+                [ makeWord32 hi1 lo1 hi2 lo2
+                , makeWord32 hi3 lo3 hi4 lo4
+                ]
+      , fromList
+            [ makeword hi1 lo1
+            , makeword hi2 lo2
+            , makeword hi3 lo3
+            , makeword hi4 lo4
+            ]
+      )
     ]
 
 

@@ -73,11 +73,11 @@
 
 (defmacro %internal-declared-op (fn &rest args)
   (labels ((rec (args)
-	     (if (and (consp args) (null (cdr args)))
-		 `(the fixnum ,@args)
-		 `(the fixnum
-		    (,fn (the fixnum ,(car args))
-			 ,(rec (cdr args)))))))
+             (if (and (consp args) (null (cdr args)))
+                 `(the fixnum ,@args)
+                 `(the fixnum
+                    (,fn (the fixnum ,(car args))
+                         ,(rec (cdr args)))))))
     (rec args)))
 
 (defmacro @+ (&rest args)
@@ -109,8 +109,8 @@
    and ability to set both starting value and step size"
   (let ((gstop (gensym)))
     `(do ((,var ,start (+ ,var ,step))
-	  (,gstop ,stop))
-	 ((> ,var ,gstop))
+          (,gstop ,stop))
+         ((> ,var ,gstop))
        ,@body)))
 
 (defmacro define-constant (name value &optional doc)
@@ -119,17 +119,17 @@
   (let ((old-value (gensym)))
     `(defconstant ,name 
        (if (boundp ',name) 
-	   (let ((,old-value (symbol-value ',name)))
-	     (if (equalp ,old-value ,value)
-		 ,old-value
-		 ,value))
-	   ,value)
+           (let ((,old-value (symbol-value ',name)))
+             (if (equalp ,old-value ,value)
+                 ,old-value
+                 ,value))
+           ,value)
        ,@(when doc (list doc)))))
 
 (defun rot-uint-32-L (word &optional (n 8))
   "32-bit rotation to the left by n bits"
   (logxor (ldb (byte n (- 32 n)) word)
-	  (ash (ldb (byte (- 32 n) 0) word) n)))
+          (ash (ldb (byte (- 32 n) 0) word) n)))
 
 )
 
@@ -137,12 +137,12 @@
 ;;; Local declaims
 ;;;
 (declaim (type (simple-array uint-8)
-	       +fsb+ +rsb+)
-	 (type (simple-array uint-16)
-	       +ft0+ +ft1+ +ft2+ +ft3+
-	       +rt0+ +rt1+ +rt2+ +rt3+)
-	 (type (simple-array)
-	       +kt0+ +kt1+ +kt2+ +kt3+))
+               +fsb+ +rsb+)
+         (type (simple-array uint-16)
+               +ft0+ +ft1+ +ft2+ +ft3+
+               +rt0+ +rt1+ +rt2+ +rt3+)
+         (type (simple-array)
+               +kt0+ +kt1+ +kt2+ +kt3+))
 
 
 ;;;
@@ -195,11 +195,11 @@ inverse algorithm"
   ;; This is a macro since it is called when making constants
   (with-gensyms (gsize gout)
     `(let* ((,gsize (/ (array-total-size ,in) 2))
-	    (,gout (make-array ,gsize)))
+            (,gout (make-array ,gsize)))
        (dotimes (i ,gsize)
-	 (setf (aref ,gout i)
-	       (logior (ash (aref ,in (* 2 (aref +fsb+ i))) 16)
-		       (aref ,in (1+ (* 2 (aref +fsb+ i)))))))
+         (setf (aref ,gout i)
+               (logior (ash (aref ,in (* 2 (aref +fsb+ i))) 16)
+                       (aref ,in (1+ (* 2 (aref +fsb+ i)))))))
        ,gout)))
 ) ;; eval-when
 
@@ -443,8 +443,8 @@ inverse algorithm"
 (define-constant +kt1+ (gen-k-table +rt1+))
 (define-constant +kt2+ (gen-k-table +rt2+))
 (define-constant +kt3+ (gen-k-table +rt3+))
-	 
-	  
+         
+          
 
        
 ;;;
@@ -466,17 +466,17 @@ inverse algorithm"
   "Combine adjacent bytes at offset into a uint-16"
   ;;This is a macro to avoid run-time index arithmetic
   `(make-uint-16 (aref ,array ,offset)
-		 (aref ,array ,(1+ offset))))
+                 (aref ,array ,(1+ offset))))
   
 
 (defmacro fill-byte-array-from-uint-16s (words array)
   "Fill in a byte-array from uint-16s"
   ;;This is a macro to avoid run-time index arithmetic
   (let* ((out-ix -2)
-	 (form
-	  (mapcar #'(lambda (w)
-		      `(make-bytes-from-uint-16 ,w ,array ,(incf out-ix 2)))
-		  words)))
+         (form
+          (mapcar #'(lambda (w)
+                      `(make-bytes-from-uint-16 ,w ,array ,(incf out-ix 2)))
+                  words)))
     `(progn
        ,@form
        ,array)))
@@ -484,27 +484,27 @@ inverse algorithm"
 (defun make-uint-32 (b3 b2 b1 b0)
   ;; can't guaranteed not bignum on 32-bit CCL
   ;; (declare (optimize (speed 3) (safety 0))
-  ;; 	   (type (unsigned-byte 8) b3 b2 b1 b0))
+  ;;       (type (unsigned-byte 8) b3 b2 b1 b0))
   (logxor (ash b3 24)
-	  (ash b2 16)
-	  (ash b1 8)
-	  b0))
+          (ash b2 16)
+          (ash b1 8)
+          b0))
 
 (defun sub-uint-32 (w)
   (make-uint-32 (aref +fsb+ (ldb (byte 8 24) w))
-		(aref +fsb+ (ldb (byte 8 16) w))
-		(aref +fsb+ (ldb (byte 8 8) w))
-		(aref +fsb+ (logand #xFF w))))
+                (aref +fsb+ (ldb (byte 8 16) w))
+                (aref +fsb+ (ldb (byte 8 8) w))
+                (aref +fsb+ (logand #xFF w))))
 
 (defun make-uint-32-from-byte-array (byte-array offset)
   ;; can't guarantee not bignum on 32-bit CCL
   ;; (declare (optimize (speed 3) (safety 0))
-  ;; 	   (type fixnum offset)
-  ;; 	   (type (simple-array uint-8) byte-array))
+  ;;       (type fixnum offset)
+  ;;       (type (simple-array uint-8) byte-array))
   (make-uint-32 (aref byte-array offset)
-	       (aref byte-array (@+ 1 offset))
- 	       (aref byte-array (@+ 2 offset))
-	       (aref byte-array (@+ 3 offset))))
+                (aref byte-array (@+ 1 offset))
+                (aref byte-array (@+ 2 offset))
+                (aref byte-array (@+ 3 offset))))
 
        
 
@@ -518,21 +518,21 @@ inverse algorithm"
 
 (defun uint-32-array->uint-16-array (in)
   (let* ((num-words (array-total-size in))
-	 (out (make-array (* 2 num-words)
-			  :element-type '(uint-16))))
+         (out (make-array (* 2 num-words)
+                          :element-type '(uint-16))))
     (do ((i 0 (1+ i))
-	 (j 0 (+ 2 j)))
-	((= i num-words))
+         (j 0 (+ 2 j)))
+        ((= i num-words))
       (setf (aref out j)
-	    (ldb (byte 16 16) (the uint-32 (aref in i))))
+            (ldb (byte 16 16) (the uint-32 (aref in i))))
       (setf (aref out (1+ j))
-	    (ldb (byte 16 0) (aref in i))))
+            (ldb (byte 16 0) (aref in i))))
     out))
-	
+        
 (defun prepare-reverse-key (fkey num-rounds)
   (declare (type fixnum num-rounds))
   (let* ((num-keys (array-total-size fkey))
-	 (rkey (make-array num-keys)))
+         (rkey (make-array num-keys)))
     (declare (type fixnum num-keys))
     ; First and last rounds do not use mix-columns
     (dotimes (i 4)
@@ -542,15 +542,15 @@ inverse algorithm"
     (dotimes (r (@- num-rounds 1))
       (declare (type fixnum r))
       (let ((f-ix (- num-keys (@* 4 (@+ 2 r))))
-	    (r-ix (@* 4 (@+ 1 r))))
-	(dotimes (i 4)
-	  (declare (type fixnum i))
-	  (let ((tmp (aref fkey (@+ f-ix i))))
-	    (setf (aref rkey (@+ r-ix i))
-		  (logxor (aref +kt0+ (ldb (byte 8 24) tmp))
-			  (aref +kt1+ (ldb (byte 8 16) tmp))
-			  (aref +kt2+ (ldb (byte 8 8) tmp))
-			  (aref +kt3+ (ldb (byte 8 0) tmp))))))))
+            (r-ix (@* 4 (@+ 1 r))))
+        (dotimes (i 4)
+          (declare (type fixnum i))
+          (let ((tmp (aref fkey (@+ f-ix i))))
+            (setf (aref rkey (@+ r-ix i))
+                  (logxor (aref +kt0+ (ldb (byte 8 24) tmp))
+                          (aref +kt1+ (ldb (byte 8 16) tmp))
+                          (aref +kt2+ (ldb (byte 8 8) tmp))
+                          (aref +kt3+ (ldb (byte 8 0) tmp))))))))
     rkey))
 
 (defun aes-expand-key (raw-key)
@@ -558,27 +558,27 @@ inverse algorithm"
   (unless (member (array-total-size raw-key) '(16 24 32))
     (error "Invalid key size.  Must be 16, 24, or 32 bytes."))
   (let* ((num-words (/ (array-total-size raw-key) 4))
-	 (num-rounds (case num-words (4 10) (6 12) (8 14)))
-	 (fkey (make-array (* +block-words+ (1+ num-rounds)))))
+         (num-rounds (case num-words (4 10) (6 12) (8 14)))
+         (fkey (make-array (* +block-words+ (1+ num-rounds)))))
     (dotimes (i num-words)
       (setf (aref fkey i) (make-uint-32-from-byte-array raw-key (* i 4))))
     (for (i num-words (1- (* +block-words+ (1+ num-rounds))))
       (setf (aref fkey i)
-	    (logxor (aref fkey (- i num-words))
-  		    (cond ((zerop (mod i num-words))
-  			   (logxor (nth (1- (/ i num-words)) +rcon+)
-  				   (sub-uint-32 (rot-uint-32-L
-  					      (aref fkey (1- i))))))
-  			  ((and (> num-words 6)
-  				(= 4 (mod i num-words)))
-  			   (sub-uint-32 (aref fkey (1- i))))
-  			  (t
-  			   (aref fkey (1- i)))))))
+            (logxor (aref fkey (- i num-words))
+                    (cond ((zerop (mod i num-words))
+                           (logxor (nth (1- (/ i num-words)) +rcon+)
+                                   (sub-uint-32 (rot-uint-32-L
+                                              (aref fkey (1- i))))))
+                          ((and (> num-words 6)
+                                (= 4 (mod i num-words)))
+                           (sub-uint-32 (aref fkey (1- i))))
+                          (t
+                           (aref fkey (1- i)))))))
     (make-instance 'aes-key
-		   :num-rounds num-rounds
-		   :forward-key (uint-32-array->uint-16-array fkey)
-		   :reverse-key (uint-32-array->uint-16-array
-				 (prepare-reverse-key fkey num-rounds)))))
+                   :num-rounds num-rounds
+                   :forward-key (uint-32-array->uint-16-array fkey)
+                   :reverse-key (uint-32-array->uint-16-array
+                                 (prepare-reverse-key fkey num-rounds)))))
 
 
 
@@ -590,194 +590,194 @@ inverse algorithm"
 (defmacro aes-round-step (t0 t1 t2 t3 rkh rkl b0 b1 b2 b3 xh xl)
   (with-gensyms (g0 g1 g2 g3)
     `(let ((,g0 (@* 2 ,b0))
-	   (,g1 (@* 2 ,b1))
-	   (,g2 (@* 2 ,b2))
-	   (,g3 (@* 2 ,b3)))
+           (,g1 (@* 2 ,b1))
+           (,g2 (@* 2 ,b2))
+           (,g3 (@* 2 ,b3)))
        (setq ,xh (@logxor ,rkh
-			  (aref ,t0 ,g0)
-			  (aref ,t1 ,g1)
-			  (aref ,t2 ,g2)
-			  (aref ,t3 ,g3)))
+                          (aref ,t0 ,g0)
+                          (aref ,t1 ,g1)
+                          (aref ,t2 ,g2)
+                          (aref ,t3 ,g3)))
        (setq ,xl (@logxor ,rkl
-			  (aref ,t0 (@+ 1 ,g0))
-			  (aref ,t1 (@+ 1 ,g1))
-			  (aref ,t2 (@+ 1 ,g2))
-			  (aref ,t3 (@+ 1 ,g3)))))))
+                          (aref ,t0 (@+ 1 ,g0))
+                          (aref ,t1 (@+ 1 ,g1))
+                          (aref ,t2 (@+ 1 ,g2))
+                          (aref ,t3 (@+ 1 ,g3)))))))
 
 
 (defmacro aes-last-round-step (sb rkh rkl b0 b1 b2 b3 xh xl)
   `(progn
      (setq ,xh (@logxor ,rkh
-		       (@ash (aref ,sb ,b0) 8)
-		       (aref ,sb ,b1)))
+                       (@ash (aref ,sb ,b0) 8)
+                       (aref ,sb ,b1)))
      (setq ,xl (@logxor ,rkl
-		       (@ash (aref ,sb ,b2) 8)
-		       (aref ,sb ,b3)))))
+                       (@ash (aref ,sb ,b2) 8)
+                       (aref ,sb ,b3)))))
 
 
 (defmacro aes-f-round (round-keys rk-ix
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
   `(progn
      (aes-round-step +ft0+ +ft1+ +ft2+ +ft3+
-		     (aref ,round-keys ,rk-ix)
-		     (aref ,round-keys (@+ 1 ,rk-ix))
-		     (ldb (byte 8 8) ,w0-hi)
-		     (ldb (byte 8 0) ,w1-hi)
-		     (ldb (byte 8 8) ,w2-lo)
-		     (ldb (byte 8 0) ,w3-lo)
-		     ,x0-hi ,x0-lo)
+                     (aref ,round-keys ,rk-ix)
+                     (aref ,round-keys (@+ 1 ,rk-ix))
+                     (ldb (byte 8 8) ,w0-hi)
+                     (ldb (byte 8 0) ,w1-hi)
+                     (ldb (byte 8 8) ,w2-lo)
+                     (ldb (byte 8 0) ,w3-lo)
+                     ,x0-hi ,x0-lo)
      (aes-round-step +ft0+ +ft1+ +ft2+ +ft3+
-		     (aref ,round-keys (@+ 2 ,rk-ix))
-		     (aref ,round-keys (@+ 3 ,rk-ix))
-		     (ldb (byte 8 8) ,w1-hi)
-		     (ldb (byte 8 0) ,w2-hi)
-		     (ldb (byte 8 8) ,w3-lo)
-		     (ldb (byte 8 0) ,w0-lo)
-		     ,x1-hi ,x1-lo)
+                     (aref ,round-keys (@+ 2 ,rk-ix))
+                     (aref ,round-keys (@+ 3 ,rk-ix))
+                     (ldb (byte 8 8) ,w1-hi)
+                     (ldb (byte 8 0) ,w2-hi)
+                     (ldb (byte 8 8) ,w3-lo)
+                     (ldb (byte 8 0) ,w0-lo)
+                     ,x1-hi ,x1-lo)
      (aes-round-step +ft0+ +ft1+ +ft2+ +ft3+
-		     (aref ,round-keys (@+ 4 ,rk-ix))
-		     (aref ,round-keys (@+ 5 ,rk-ix))
-		     (ldb (byte 8 8) ,w2-hi)
-		     (ldb (byte 8 0) ,w3-hi)
-		     (ldb (byte 8 8) ,w0-lo)
-		     (ldb (byte 8 0) ,w1-lo)
-		     ,x2-hi ,x2-lo)
+                     (aref ,round-keys (@+ 4 ,rk-ix))
+                     (aref ,round-keys (@+ 5 ,rk-ix))
+                     (ldb (byte 8 8) ,w2-hi)
+                     (ldb (byte 8 0) ,w3-hi)
+                     (ldb (byte 8 8) ,w0-lo)
+                     (ldb (byte 8 0) ,w1-lo)
+                     ,x2-hi ,x2-lo)
      (aes-round-step +ft0+ +ft1+ +ft2+ +ft3+
-		     (aref ,round-keys (@+ 6 ,rk-ix))
-		     (aref ,round-keys (@+ 7 ,rk-ix))
-		     (ldb (byte 8 8) ,w3-hi)
-		     (ldb (byte 8 0) ,w0-hi)
-		     (ldb (byte 8 8) ,w1-lo)
-		     (ldb (byte 8 0) ,w2-lo)
-		     ,x3-hi ,x3-lo)))
+                     (aref ,round-keys (@+ 6 ,rk-ix))
+                     (aref ,round-keys (@+ 7 ,rk-ix))
+                     (ldb (byte 8 8) ,w3-hi)
+                     (ldb (byte 8 0) ,w0-hi)
+                     (ldb (byte 8 8) ,w1-lo)
+                     (ldb (byte 8 0) ,w2-lo)
+                     ,x3-hi ,x3-lo)))
      
 (defmacro aes-last-f-round (round-keys rk-ix
-			    w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-			    x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+                            w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                            x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
   `(progn
      (aes-last-round-step +fsb+
-			  (aref ,round-keys ,rk-ix)
-			  (aref ,round-keys (@+ 1 ,rk-ix))
-			  (ldb (byte 8 8) ,w0-hi)
-			  (ldb (byte 8 0) ,w1-hi)
-			  (ldb (byte 8 8) ,w2-lo)
-			  (ldb (byte 8 0) ,w3-lo)
-			  ,x0-hi ,x0-lo)
+                          (aref ,round-keys ,rk-ix)
+                          (aref ,round-keys (@+ 1 ,rk-ix))
+                          (ldb (byte 8 8) ,w0-hi)
+                          (ldb (byte 8 0) ,w1-hi)
+                          (ldb (byte 8 8) ,w2-lo)
+                          (ldb (byte 8 0) ,w3-lo)
+                          ,x0-hi ,x0-lo)
      (aes-last-round-step +fsb+
-			  (aref ,round-keys (@+ 2 ,rk-ix))
-			  (aref ,round-keys (@+ 3 ,rk-ix))
-			  (ldb (byte 8 8) ,w1-hi)
-			  (ldb (byte 8 0) ,w2-hi)
-			  (ldb (byte 8 8) ,w3-lo)
-			  (ldb (byte 8 0) ,w0-lo)
-			  ,x1-hi ,x1-lo)
+                          (aref ,round-keys (@+ 2 ,rk-ix))
+                          (aref ,round-keys (@+ 3 ,rk-ix))
+                          (ldb (byte 8 8) ,w1-hi)
+                          (ldb (byte 8 0) ,w2-hi)
+                          (ldb (byte 8 8) ,w3-lo)
+                          (ldb (byte 8 0) ,w0-lo)
+                          ,x1-hi ,x1-lo)
      (aes-last-round-step +fsb+
-			  (aref ,round-keys (@+ 4 ,rk-ix))
-			  (aref ,round-keys (@+ 5 ,rk-ix))
-			  (ldb (byte 8 8) ,w2-hi)
-			  (ldb (byte 8 0) ,w3-hi)
-			  (ldb (byte 8 8) ,w0-lo)
-			  (ldb (byte 8 0) ,w1-lo)
-			  ,x2-hi ,x2-lo)
+                          (aref ,round-keys (@+ 4 ,rk-ix))
+                          (aref ,round-keys (@+ 5 ,rk-ix))
+                          (ldb (byte 8 8) ,w2-hi)
+                          (ldb (byte 8 0) ,w3-hi)
+                          (ldb (byte 8 8) ,w0-lo)
+                          (ldb (byte 8 0) ,w1-lo)
+                          ,x2-hi ,x2-lo)
      (aes-last-round-step +fsb+
-			  (aref ,round-keys (@+ 6 ,rk-ix))
-			  (aref ,round-keys (@+ 7 ,rk-ix))
-			  (ldb (byte 8 8) ,w3-hi)
-			  (ldb (byte 8 0) ,w0-hi)
-			  (ldb (byte 8 8) ,w1-lo)
-			  (ldb (byte 8 0) ,w2-lo)
-			  ,x3-hi ,x3-lo)))
+                          (aref ,round-keys (@+ 6 ,rk-ix))
+                          (aref ,round-keys (@+ 7 ,rk-ix))
+                          (ldb (byte 8 8) ,w3-hi)
+                          (ldb (byte 8 0) ,w0-hi)
+                          (ldb (byte 8 8) ,w1-lo)
+                          (ldb (byte 8 0) ,w2-lo)
+                          ,x3-hi ,x3-lo)))
 
 ;; Reverse
 
 (defmacro aes-r-round (round-keys rk-ix
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
   `(progn
      (aes-round-step +rt0+ +rt1+ +rt2+ +rt3+
-		     (aref ,round-keys ,rk-ix)
-		     (aref ,round-keys (@+ 1 ,rk-ix))
-		     (ldb (byte 8 8) ,w0-hi)
-		     (ldb (byte 8 0) ,w3-hi)
-		     (ldb (byte 8 8) ,w2-lo)
-		     (ldb (byte 8 0) ,w1-lo)
-		     ,x0-hi ,x0-lo)
+                     (aref ,round-keys ,rk-ix)
+                     (aref ,round-keys (@+ 1 ,rk-ix))
+                     (ldb (byte 8 8) ,w0-hi)
+                     (ldb (byte 8 0) ,w3-hi)
+                     (ldb (byte 8 8) ,w2-lo)
+                     (ldb (byte 8 0) ,w1-lo)
+                     ,x0-hi ,x0-lo)
      (aes-round-step +rt0+ +rt1+ +rt2+ +rt3+
-		     (aref ,round-keys (@+ 2 ,rk-ix))
-		     (aref ,round-keys (@+ 3 ,rk-ix))
-		     (ldb (byte 8 8) ,w1-hi)
-		     (ldb (byte 8 0) ,w0-hi)
-		     (ldb (byte 8 8) ,w3-lo)
-		     (ldb (byte 8 0) ,w2-lo)
-		     ,x1-hi ,x1-lo)
+                     (aref ,round-keys (@+ 2 ,rk-ix))
+                     (aref ,round-keys (@+ 3 ,rk-ix))
+                     (ldb (byte 8 8) ,w1-hi)
+                     (ldb (byte 8 0) ,w0-hi)
+                     (ldb (byte 8 8) ,w3-lo)
+                     (ldb (byte 8 0) ,w2-lo)
+                     ,x1-hi ,x1-lo)
      (aes-round-step +rt0+ +rt1+ +rt2+ +rt3+
-		     (aref ,round-keys (@+ 4 ,rk-ix))
-		     (aref ,round-keys (@+ 5 ,rk-ix))
-		     (ldb (byte 8 8) ,w2-hi)
-		     (ldb (byte 8 0) ,w1-hi)
-		     (ldb (byte 8 8) ,w0-lo)
-		     (ldb (byte 8 0) ,w3-lo)
-		     ,x2-hi ,x2-lo)
+                     (aref ,round-keys (@+ 4 ,rk-ix))
+                     (aref ,round-keys (@+ 5 ,rk-ix))
+                     (ldb (byte 8 8) ,w2-hi)
+                     (ldb (byte 8 0) ,w1-hi)
+                     (ldb (byte 8 8) ,w0-lo)
+                     (ldb (byte 8 0) ,w3-lo)
+                     ,x2-hi ,x2-lo)
      (aes-round-step +rt0+ +rt1+ +rt2+ +rt3+
-		     (aref ,round-keys (@+ 6 ,rk-ix))
-		     (aref ,round-keys (@+ 7 ,rk-ix))
-		     (ldb (byte 8 8) ,w3-hi)
-		     (ldb (byte 8 0) ,w2-hi)
-		     (ldb (byte 8 8) ,w1-lo)
-		     (ldb (byte 8 0) ,w0-lo)
-		     ,x3-hi ,x3-lo)))
+                     (aref ,round-keys (@+ 6 ,rk-ix))
+                     (aref ,round-keys (@+ 7 ,rk-ix))
+                     (ldb (byte 8 8) ,w3-hi)
+                     (ldb (byte 8 0) ,w2-hi)
+                     (ldb (byte 8 8) ,w1-lo)
+                     (ldb (byte 8 0) ,w0-lo)
+                     ,x3-hi ,x3-lo)))
      
 (defmacro aes-last-r-round (round-keys rk-ix
-			    w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-			    x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+                            w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                            x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
   `(progn
      (aes-last-round-step +rsb+
-			  (aref ,round-keys ,rk-ix)
-			  (aref ,round-keys (@+ 1 ,rk-ix))
-			  (ldb (byte 8 8) ,w0-hi)
-			  (ldb (byte 8 0) ,w3-hi)
-			  (ldb (byte 8 8) ,w2-lo)
-			  (ldb (byte 8 0) ,w1-lo)
-			  ,x0-hi ,x0-lo)
+                          (aref ,round-keys ,rk-ix)
+                          (aref ,round-keys (@+ 1 ,rk-ix))
+                          (ldb (byte 8 8) ,w0-hi)
+                          (ldb (byte 8 0) ,w3-hi)
+                          (ldb (byte 8 8) ,w2-lo)
+                          (ldb (byte 8 0) ,w1-lo)
+                          ,x0-hi ,x0-lo)
      (aes-last-round-step +rsb+
-			  (aref ,round-keys (@+ 2 ,rk-ix))
-			  (aref ,round-keys (@+ 3 ,rk-ix))
-			  (ldb (byte 8 8) ,w1-hi)
-			  (ldb (byte 8 0) ,w0-hi)
-			  (ldb (byte 8 8) ,w3-lo)
-			  (ldb (byte 8 0) ,w2-lo)
-			  ,x1-hi ,x1-lo)
+                          (aref ,round-keys (@+ 2 ,rk-ix))
+                          (aref ,round-keys (@+ 3 ,rk-ix))
+                          (ldb (byte 8 8) ,w1-hi)
+                          (ldb (byte 8 0) ,w0-hi)
+                          (ldb (byte 8 8) ,w3-lo)
+                          (ldb (byte 8 0) ,w2-lo)
+                          ,x1-hi ,x1-lo)
      (aes-last-round-step +rsb+
-			  (aref ,round-keys (@+ 4 ,rk-ix))
-			  (aref ,round-keys (@+ 5 ,rk-ix))
-			  (ldb (byte 8 8) ,w2-hi)
-			  (ldb (byte 8 0) ,w1-hi)
-			  (ldb (byte 8 8) ,w0-lo)
-			  (ldb (byte 8 0) ,w3-lo)
-			  ,x2-hi ,x2-lo)
+                          (aref ,round-keys (@+ 4 ,rk-ix))
+                          (aref ,round-keys (@+ 5 ,rk-ix))
+                          (ldb (byte 8 8) ,w2-hi)
+                          (ldb (byte 8 0) ,w1-hi)
+                          (ldb (byte 8 8) ,w0-lo)
+                          (ldb (byte 8 0) ,w3-lo)
+                          ,x2-hi ,x2-lo)
      (aes-last-round-step +rsb+
-			  (aref ,round-keys (@+ 6 ,rk-ix))
-			  (aref ,round-keys (@+ 7 ,rk-ix))
-			  (ldb (byte 8 8) ,w3-hi)
-			  (ldb (byte 8 0) ,w2-hi)
-			  (ldb (byte 8 8) ,w1-lo)
-			  (ldb (byte 8 0) ,w0-lo)
-			  ,x3-hi ,x3-lo)))
+                          (aref ,round-keys (@+ 6 ,rk-ix))
+                          (aref ,round-keys (@+ 7 ,rk-ix))
+                          (ldb (byte 8 8) ,w3-hi)
+                          (ldb (byte 8 0) ,w2-hi)
+                          (ldb (byte 8 8) ,w1-lo)
+                          (ldb (byte 8 0) ,w0-lo)
+                          ,x3-hi ,x3-lo)))
 
 
 
 (defmacro with-init-aes-vars (in round-keys vars &body body)
   "Initialize the input uint-16s from round-keys"
   (let* ((in-ix -1)
-	 (out-ix -2)
-	 (form
-	  (mapcar #'(lambda (v)
-		      `(setq ,v
-			     (@logxor
-			      (aref ,round-keys ,(incf in-ix))
-			      (make-uint-16-from-byte-array ,in ,(incf out-ix 2)))))
-		  vars)))
+         (out-ix -2)
+         (form
+          (mapcar #'(lambda (v)
+                      `(setq ,v
+                             (@logxor
+                              (aref ,round-keys ,(incf in-ix))
+                              (make-uint-16-from-byte-array ,in ,(incf out-ix 2)))))
+                  vars)))
     `(progn
        ,@form
        ,@body)))
@@ -785,77 +785,77 @@ inverse algorithm"
 
 (defun aes-encrypt (keys in &key (out (make-array 16 :element-type '(unsigned-byte 8))))
   (declare (optimize (speed 3) (safety 0))
-	    (type (simple-array uint-8) in out))
+            (type (simple-array uint-8) in out))
   (let ((round-keys (forward-key-of keys)))
     (declare (type (simple-array uint-16) round-keys))
     (let ((w0-hi 0) (w1-hi 0) (w2-hi 0) (w3-hi 0)
-	  (w0-lo 0) (w1-lo 0) (w2-lo 0) (w3-lo 0)	  
-	  (x0-hi 0) (x1-hi 0) (x2-hi 0) (x3-hi 0)
-	  (x0-lo 0) (x1-lo 0) (x2-lo 0) (x3-lo 0)
-	  (num-rounds (num-rounds keys)))
+          (w0-lo 0) (w1-lo 0) (w2-lo 0) (w3-lo 0)         
+          (x0-hi 0) (x1-hi 0) (x2-hi 0) (x3-hi 0)
+          (x0-lo 0) (x1-lo 0) (x2-lo 0) (x3-lo 0)
+          (num-rounds (num-rounds keys)))
       (declare (type fixnum
-		     w0-hi w1-hi w2-hi w3-hi w0-lo w1-lo w2-lo w3-lo
-		     x0-hi x1-hi x2-hi x3-hi x0-lo x1-lo x2-lo x3-lo
-		     num-rounds))
+                     w0-hi w1-hi w2-hi w3-hi w0-lo w1-lo w2-lo w3-lo
+                     x0-hi x1-hi x2-hi x3-hi x0-lo x1-lo x2-lo x3-lo
+                     num-rounds))
       (with-init-aes-vars
-	  in round-keys (w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
-	(do* ((i 1 (@+ i 2))
-	      (rk-ix 8 (@+ 16 rk-ix)))
-	     ((= i (@- num-rounds 1)))
-	  (declare (type fixnum i))
-	  (aes-f-round round-keys rk-ix
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
-	  (aes-f-round round-keys (@+ 8 rk-ix)
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo))
-	(aes-f-round round-keys (@* 8 (@- num-rounds 1))
-		     w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		     x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
-	(aes-last-f-round round-keys (@* 8 num-rounds)
-			  x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
-			  w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
-	(fill-byte-array-from-uint-16s (w0-hi w0-lo w1-hi w1-lo
-					      w2-hi w2-lo w3-hi w3-lo)
-				       out))))
+          in round-keys (w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
+        (do* ((i 1 (@+ i 2))
+              (rk-ix 8 (@+ 16 rk-ix)))
+             ((= i (@- num-rounds 1)))
+          (declare (type fixnum i))
+          (aes-f-round round-keys rk-ix
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+          (aes-f-round round-keys (@+ 8 rk-ix)
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo))
+        (aes-f-round round-keys (@* 8 (@- num-rounds 1))
+                     w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                     x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+        (aes-last-f-round round-keys (@* 8 num-rounds)
+                          x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
+                          w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
+        (fill-byte-array-from-uint-16s (w0-hi w0-lo w1-hi w1-lo
+                                              w2-hi w2-lo w3-hi w3-lo)
+                                       out))))
   out)
 
 
 (defun aes-decrypt (keys in &key (out (make-array 16 :element-type '(unsigned-byte 8))))
   (declare (optimize (speed 3) (safety 0))
-	   (type (simple-array uint-8) in out))	   
+           (type (simple-array uint-8) in out))    
   (let ((round-keys (reverse-key-of keys)))
     (declare (type (simple-array uint-16) round-keys))
     (let ((w0-hi 0) (w1-hi 0) (w2-hi 0) (w3-hi 0)
-	  (w0-lo 0) (w1-lo 0) (w2-lo 0) (w3-lo 0)	  
-	  (x0-hi 0) (x1-hi 0) (x2-hi 0) (x3-hi 0)
-	  (x0-lo 0) (x1-lo 0) (x2-lo 0) (x3-lo 0)
-	  (num-rounds (num-rounds keys)))
+          (w0-lo 0) (w1-lo 0) (w2-lo 0) (w3-lo 0)         
+          (x0-hi 0) (x1-hi 0) (x2-hi 0) (x3-hi 0)
+          (x0-lo 0) (x1-lo 0) (x2-lo 0) (x3-lo 0)
+          (num-rounds (num-rounds keys)))
       (declare (type fixnum
-		     w0-hi w1-hi w2-hi w3-hi w0-lo w1-lo w2-lo w3-lo
-		     x0-hi x1-hi x2-hi x3-hi x0-lo x1-lo x2-lo x3-lo
-		     num-rounds))
+                     w0-hi w1-hi w2-hi w3-hi w0-lo w1-lo w2-lo w3-lo
+                     x0-hi x1-hi x2-hi x3-hi x0-lo x1-lo x2-lo x3-lo
+                     num-rounds))
       (with-init-aes-vars
-	  in round-keys (w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
-	(do* ((i 1 (@+ i 2))
-	      (rk-ix 8 (@+ 16 rk-ix)))
-	     ((= i (@- num-rounds 1)))
-	  (declare (type fixnum i))
-	  (aes-r-round round-keys rk-ix
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
-	  (aes-r-round round-keys (@+ 8 rk-ix)
-		       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
-		       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo))
-	(aes-r-round round-keys (@* 8 (@- num-rounds 1))
-		     w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
-		     x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
-	(aes-last-r-round round-keys (@* 8 num-rounds)
-			  x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
-			  w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
-	(fill-byte-array-from-uint-16s (w0-hi w0-lo w1-hi w1-lo
-					      w2-hi w2-lo w3-hi w3-lo)
-				     out))))
+          in round-keys (w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
+        (do* ((i 1 (@+ i 2))
+              (rk-ix 8 (@+ 16 rk-ix)))
+             ((= i (@- num-rounds 1)))
+          (declare (type fixnum i))
+          (aes-r-round round-keys rk-ix
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+          (aes-r-round round-keys (@+ 8 rk-ix)
+                       x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
+                       w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo))
+        (aes-r-round round-keys (@* 8 (@- num-rounds 1))
+                     w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo
+                     x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo)
+        (aes-last-r-round round-keys (@* 8 num-rounds)
+                          x0-hi x0-lo x1-hi x1-lo x2-hi x2-lo x3-hi x3-lo
+                          w0-hi w0-lo w1-hi w1-lo w2-hi w2-lo w3-hi w3-lo)
+        (fill-byte-array-from-uint-16s (w0-hi w0-lo w1-hi w1-lo
+                                              w2-hi w2-lo w3-hi w3-lo)
+                                     out))))
   out)
 
 
@@ -866,8 +866,8 @@ inverse algorithm"
 (defmacro with-timer (result &body body)
   (with-gensyms (start stop ret)
     `(let* ((,start (get-internal-run-time))
-	    (,ret (progn ,@body))
-	    (,stop (get-internal-run-time)))
+            (,ret (progn ,@body))
+            (,stop (get-internal-run-time)))
        (setf ,result (/ (- ,stop ,start) internal-time-units-per-second 1.0))
        ,ret)))
 
@@ -875,44 +875,44 @@ inverse algorithm"
 (defun aes-get-speed (&key (bits 128) (times 100000) (direction :encrypt))
   "Return encrypted bits per second"
   (flet ((a (len) (make-array len
-			      :initial-element 0		       
-			      :element-type 'uint-8)))
+                              :initial-element 0                       
+                              :element-type 'uint-8)))
     (let ((x (a 16))
-	  (y (a 16))
-	  (key (aes-expand-key (a (/ bits 8))))
-	  (the-time))
+          (y (a 16))
+          (key (aes-expand-key (a (/ bits 8))))
+          (the-time))
       (if (eq direction :encrypt)
-	  (with-timer the-time 
-	    (dotimes (i times) 
-	      (aes-encrypt key x :out y)))
-	  (with-timer the-time 
-	    (dotimes (i times) 
-	      (aes-decrypt key x :out y))))
+          (with-timer the-time 
+            (dotimes (i times) 
+              (aes-encrypt key x :out y)))
+          (with-timer the-time 
+            (dotimes (i times) 
+              (aes-decrypt key x :out y))))
       (values (* bits times (/ the-time))
-	      the-time))))
+              the-time))))
 
 (defun aes-get-avg-speed (&key (iterations 10) (times 100000) (bits 128) (direction :encrypt))
   (let ((bit-sum 0)
-	(time-sum 0))
+        (time-sum 0))
     (dotimes (i iterations)
       (multiple-value-bind (bits time)
-	  (aes-get-speed :bits bits :times times :direction direction)
-	(incf bit-sum bits)
-	(incf time-sum time)))
+          (aes-get-speed :bits bits :times times :direction direction)
+        (incf bit-sum bits)
+        (incf time-sum time)))
     (values
-	    (/ bit-sum iterations)
-	    (/ time-sum iterations))))
+            (/ bit-sum iterations)
+            (/ time-sum iterations))))
 
 (defun hex-str->bin-array (hex-str)
   "Converts a hex string to binary array. Length of
 hex string must be mulitple of 2"
   (let* ((bin-len (/ (length hex-str) 2))
-	 (bin (make-array bin-len :element-type 'uint-8)))
+         (bin (make-array bin-len :element-type 'uint-8)))
     (dotimes (i bin-len)
       (setf (aref bin i)
-	    (parse-integer hex-str :radix 16
-			   :start (* 2 i)
-			   :end (* 2 (1+ i)))))   
+            (parse-integer hex-str :radix 16
+                           :start (* 2 i)
+                           :end (* 2 (1+ i)))))   
     bin))
 
 (defparameter *aes-test-values*
@@ -929,17 +929,17 @@ hex string must be mulitple of 2"
 (defun aes-self-test (&key (data *aes-test-values*) (verbose t))
   "Short development test for consistency of aes"
   (labels ((cb (hex) (hex-str->bin-array hex))
-	   (test (&key key pt ct)
-	     (and (equalp (cb ct) 
-			  (aes-encrypt (aes-expand-key (cb key)) (cb pt))) 
-		  (equalp (cb pt) 
-			  (aes-decrypt (aes-expand-key (cb key)) (cb ct)))))) 
+           (test (&key key pt ct)
+             (and (equalp (cb ct) 
+                          (aes-encrypt (aes-expand-key (cb key)) (cb pt))) 
+                  (equalp (cb pt) 
+                          (aes-decrypt (aes-expand-key (cb key)) (cb ct)))))) 
     (mapcar (lambda (x) 
-	      (let ((ok? (apply #'test x)))
-		(when (and verbose (not ok?))
-		  (format t "~&AES test fail for ~A~%" x))
-		ok?))
-	    data)))
+              (let ((ok? (apply #'test x)))
+                (when (and verbose (not ok?))
+                  (format t "~&AES test fail for ~A~%" x))
+                ok?))
+            data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
