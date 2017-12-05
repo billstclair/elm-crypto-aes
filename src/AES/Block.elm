@@ -303,11 +303,7 @@ lastFRound keys rkix ws =
         x3 =
             lastRoundStep fsb_
                 ( get (6 + rkix) keys, get (7 + rkix) keys )
-                ( hibyte w3h
-                , lobyte w0h
-                , hibyte w1l
-                , lobyte w2l
-                )
+                ( hibyte w3h, lobyte w0h, hibyte w1l, lobyte w2l )
     in
     ( x0, x1, x2, x3 )
 
