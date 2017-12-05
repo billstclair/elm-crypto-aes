@@ -461,8 +461,7 @@ cryptor keyGetter round lastRound keys ina =
                     round keya rkix ws
                         |> loop (1 + i) (8 + rkix)
     in
-    loop 2 8 (loadKeys ina keya)
-        |> round keya (8 * (numRounds - 1))
+    loop 1 8 (loadKeys ina keya)
         |> lastRound keya (8 * numRounds)
         |> fillByteArrayFromFourPairs
 

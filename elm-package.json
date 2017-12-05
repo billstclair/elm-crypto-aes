@@ -1,5 +1,5 @@
 {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "summary": "elm-crypto-aes is a pure Elm implementation of the Advanced Encryption Standard",
     "repository": "https://github.com/billstclair/elm-crypto-aes.git",
     "license": "MIT",
