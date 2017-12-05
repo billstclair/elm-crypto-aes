@@ -435,8 +435,8 @@ cryptor keyGetter round lastRound keys ina =
                 if i >= numRounds then
                     ws
                 else
-                    loop (1 + i) (8 + rkix) <|
-                        round keya rkix ws
+                    round keya rkix ws
+                        |> loop (1 + i) (8 + rkix)
     in
     loop 2 8 (loadKeys ina keya)
         |> round keya (8 * (numRounds - 1))
