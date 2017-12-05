@@ -2,6 +2,7 @@ sudo: false
 
 cache:
   directories:
+    - elm-stuff/build-artifacts
     - tests/elm-stuff/build-artifacts
 
 os:
