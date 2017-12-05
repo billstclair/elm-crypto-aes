@@ -1,12 +1,12 @@
 module Tests exposing (all)
 
-import AES exposing (decrypt, encrypt)
-import AES.Block exposing (FourPairs, expandKeyStringNow, loadKeys)
-import AES.Tables exposing (..)
-import AES.Types exposing (..)
-import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, repeat)
 import BitwiseInfix exposing (..)
+import Crypto.AES
+import Crypto.AES.Block exposing (FourPairs, expandKeyStringNow, loadKeys)
+import Crypto.AES.Tables exposing (..)
+import Crypto.AES.Types exposing (..)
+import Crypto.AES.Utility exposing (..)
 import Expect exposing (Expectation)
 import List
 import Maybe exposing (withDefault)
@@ -189,6 +189,7 @@ arrayData =
           ]
         , List.map encryptTest aesTestValues
         , List.map decryptTest aesTestValues
+        , List.map encryptTest2 aesTestValues
         ]
 
 
@@ -235,7 +236,12 @@ aesTestValues =
 encryptTest : AesTest -> ( String, Array Int, Array Int )
 encryptTest test =
     ( "enc-" ++ test.ct
-    , encrypt (expandKeyStringNow test.key) (cb test.pt)
+    , case Crypto.AES.expandKeyString test.key of
+        Ok keys ->
+            Crypto.AES.encrypt keys (cb test.pt)
+
+        Err _ ->
+            empty
     , cb test.ct
     )
 
@@ -243,8 +249,26 @@ encryptTest test =
 decryptTest : AesTest -> ( String, Array Int, Array Int )
 decryptTest test =
     ( "dec-" ++ test.ct
-    , decrypt (expandKeyStringNow test.key) (cb test.ct)
+    , case Crypto.AES.expandKeyString test.key of
+        Ok keys ->
+            Crypto.AES.decrypt keys (cb test.ct)
+
+        Err _ ->
+            empty
     , cb test.pt
+    )
+
+
+encryptTest2 : AesTest -> ( String, Array Int, Array Int )
+encryptTest2 test =
+    ( "enc2-" ++ test.ct
+    , case Crypto.AES.expandKey (cb test.key) of
+        Ok keys ->
+            Crypto.AES.encrypt keys (cb test.pt)
+
+        Err _ ->
+            empty
+    , cb test.ct
     )
 
 

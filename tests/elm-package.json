@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
-    "summary": "Tests for elm-aes.",
-    "repository": "https://github.com/billstclair/elm-aes.git",
+    "summary": "Tests for elm-crypto-aes.",
+    "repository": "https://github.com/billstclair/elm-crypto-aes.git",
     "license": "MIT",
     "source-directories": [
         ".",

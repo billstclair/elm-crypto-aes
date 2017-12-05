@@ -10,13 +10,13 @@
 ----------------------------------------------------------------------
 
 
-module AES.Block exposing (..)
+module Crypto.AES.Block exposing (..)
 
-import AES.Tables exposing (..)
-import AES.Types exposing (Keys)
-import AES.Utility exposing (..)
 import Array exposing (Array, empty, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
+import Crypto.AES.Tables exposing (..)
+import Crypto.AES.Types exposing (Keys)
+import Crypto.AES.Utility exposing (..)
 import Debug
 import List.Extra as LE
 
@@ -86,6 +86,29 @@ prepareReverseKey fkey numRounds =
     in
     loop1 0 rkey
         |> loop2 0
+
+
+validateKeyElements : Array Int -> Bool
+validateKeyElements rawkey =
+    let
+        len =
+            length rawkey
+
+        loop =
+            \i ->
+                if i >= len then
+                    True
+                else
+                    let
+                        val =
+                            get i rawkey
+                    in
+                    if val < 0 || val >= 256 then
+                        False
+                    else
+                        loop (1 + i)
+    in
+    loop 0
 
 
 {-| Expand a raw key array.

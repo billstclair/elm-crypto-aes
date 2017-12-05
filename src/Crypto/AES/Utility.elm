@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --
--- AES.elm
--- Elm implementation of AES, the Advanced Encryption Standard.
+-- Utility.elm
+-- Utilities for Crypto.AES
 -- Copyright (c) 2017 Bill St. Clair <billstclair@gmail.com>
 -- Some rights reserved.
 -- Distributed under the MIT License
@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------
 
 
-module AES.Utility exposing (..)
+module Crypto.AES.Utility exposing (..)
 
 import Array exposing (Array, empty, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)

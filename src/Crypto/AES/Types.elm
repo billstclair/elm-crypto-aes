@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------
 
 
-module AES.Types exposing (Keys)
+module Crypto.AES.Types exposing (Keys)
 
 {-| Types for the AES module.
 

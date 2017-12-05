@@ -1,14 +1,13 @@
 {
     "version": "1.0.0",
-    "summary": "elm-aes is a pure Elm implementation of the Advanced Encryption Standard",
-    "repository": "https://github.com/billstclair/elm-aes.git",
+    "summary": "elm-crypto-aes is a pure Elm implementation of the Advanced Encryption Standard",
+    "repository": "https://github.com/billstclair/elm-crypto-aes.git",
     "license": "MIT",
     "source-directories": [
         "src"
     ],
     "exposed-modules": [
-        "AES",
-        "AES.Types"
+        "Crypto.AES"
     ],
     "dependencies": {
         "billstclair/elm-bitwise-infix": "1.0.2 <= v < 2.0.0",

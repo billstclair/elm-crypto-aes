@@ -10,11 +10,11 @@
 ----------------------------------------------------------------------
 
 
-module AES.Tables exposing (..)
+module Crypto.AES.Tables exposing (..)
 
-import AES.Utility exposing (..)
 import Array exposing (Array, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
+import Crypto.AES.Utility exposing (..)
 
 
 ---
