@@ -420,7 +420,11 @@ fillByteArrayFromFourPairs ws =
     fillByteArrayFromWords [ w0h, w0l, w1h, w1l, w2h, w2l, w3h, w3l ]
 
 
-cryptor : (Keys -> Array Int) -> (Array Int -> Int -> FourPairs -> FourPairs) -> (Array Int -> Int -> FourPairs -> FourPairs) -> Keys -> Array Int -> Array Int
+type alias Round =
+    Array Int -> Int -> FourPairs -> FourPairs
+
+
+cryptor : (Keys -> Array Int) -> Round -> Round -> Keys -> Array Int -> Array Int
 cryptor keyGetter round lastRound keys ina =
     let
         numRounds =
