@@ -476,5 +476,6 @@ encrypt =
 
 {-| Decrypt the 16-element Array with the Key
 -}
+decrypt : Keys -> Array Int -> Array Int
 decrypt =
     cryptor .reverseKey rRound lastRRound
