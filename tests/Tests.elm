@@ -3,9 +3,8 @@ module Tests exposing (all)
 import Array exposing (Array, empty, fromList, repeat)
 import BitwiseInfix exposing (..)
 import Crypto.AES
-import Crypto.AES.Block exposing (FourPairs, expandKeyStringNow, loadKeys)
+import Crypto.AES.Block exposing (FourPairs, Keys, expandKeyStringNow, loadKeys)
 import Crypto.AES.Tables exposing (..)
-import Crypto.AES.Types exposing (..)
 import Crypto.AES.Utility exposing (..)
 import Expect exposing (Expectation)
 import List

@@ -15,7 +15,6 @@ module Crypto.AES.Block exposing (..)
 import Array exposing (Array, empty, fromList, length, repeat, set)
 import BitwiseInfix exposing (..)
 import Crypto.AES.Tables exposing (..)
-import Crypto.AES.Types exposing (Keys)
 import Crypto.AES.Utility exposing (..)
 import Debug
 import List.Extra as LE
@@ -109,6 +108,15 @@ validateKeyElements rawkey =
                         loop (1 + i)
     in
     loop 0
+
+
+{-| Encryption & decryption keys for AES algorithm.
+-}
+type alias Keys =
+    { numRounds : Int
+    , forwardKey : Array Int
+    , reverseKey : Array Int
+    }
 
 
 {-| Expand a raw key array.

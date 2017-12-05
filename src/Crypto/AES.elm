@@ -37,7 +37,6 @@ Based on [cl-cryto](https://github.com/billstclair/cl-crypto)'s [aes16.lisp](htt
 
 import Array exposing (Array)
 import Crypto.AES.Block
-import Crypto.AES.Types
 
 
 {-| Expanded AES encryption and decryption keys.
@@ -46,7 +45,7 @@ Created by `expandKey` and `expandKeyString`. Passed to `encryt` and `decrypt`.
 
 -}
 type Keys
-    = Keys Crypto.AES.Types.Keys
+    = Keys Crypto.AES.Block.Keys
 
 
 {-| Expand a raw key array.
