@@ -10,14 +10,10 @@
 ----------------------------------------------------------------------
 
 
-module Crypto.AES
-    exposing
-        ( Keys
-        , decrypt
-        , encrypt
-        , expandKey
-        , expandKeyString
-        )
+module Crypto.AES exposing
+    ( Keys
+    , expandKey, expandKeyString, encrypt, decrypt
+    )
 
 {-| A pure Elm implementation of Rijndael, the Advanced Encryption Standard (AES).
 
@@ -62,6 +58,7 @@ expandKey rawkey =
 
             Err msg ->
                 Err msg
+
     else
         Err "Key elements must be between 0 and 255 inclusive."
 

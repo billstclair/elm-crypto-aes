@@ -10,11 +10,12 @@
 ----------------------------------------------------------------------
 
 
-module Crypto.AES.Tables exposing (..)
+module Crypto.AES.Tables exposing (blockWords_, fsb_, ft0_, ft1_, ft2_, ft3_, genKTable, kt0_, kt1_, kt2_, kt3_, rcon_, rsb_, rt0_, rt1_, rt2_, rt3_, subWord32, table, zero00)
 
 import Array exposing (Array, fromList, length, repeat, set)
-import BitwiseInfix exposing (..)
+import Bitwise exposing (or, shiftLeftBy)
 import Crypto.AES.Utility exposing (..)
+
 
 
 ---
@@ -321,22 +322,22 @@ genKTable gin =
             length gin // 2
 
         loop : Int -> Array Int -> Array Int
-        loop =
-            \i res ->
-                if i >= gsize then
-                    res
-                else
-                    let
-                        idx =
-                            2 * get i fsb_
-                    in
-                    loop (i + 1)
-                        (res
-                            |> set i
-                                ((get idx gin ~<< 16)
-                                    ~| get (1 + idx) gin
-                                )
-                        )
+        loop i res =
+            if i >= gsize then
+                res
+
+            else
+                let
+                    idx =
+                        2 * get i fsb_
+                in
+                loop (i + 1)
+                    (res
+                        |> set i
+                            (or (shiftLeftBy 16 <| get idx gin)
+                                (get (1 + idx) gin)
+                            )
+                    )
     in
     loop 0 <| repeat gsize 0
 

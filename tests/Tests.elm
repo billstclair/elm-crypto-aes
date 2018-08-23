@@ -1,7 +1,6 @@
 module Tests exposing (all)
 
 import Array exposing (Array, empty, fromList, repeat)
-import BitwiseInfix exposing (..)
 import Crypto.AES
 import Crypto.AES.Block exposing (FourPairs, Keys, expandKeyStringNow, loadKeys)
 import Crypto.AES.Tables exposing (..)
@@ -27,6 +26,7 @@ maybeLog : String -> a -> a
 maybeLog label value =
     if enableLogging then
         log label value
+
     else
         value
 
@@ -50,7 +50,7 @@ expectResult sb was =
                     Expect.true "You shouldn't ever see this." True
 
                 Ok _ ->
-                    Expect.false (toString err) True
+                    Expect.false (Debug.toString err) True
 
         Ok wasv ->
             case sb of
@@ -196,7 +196,7 @@ fourPairData : List ( String, FourPairs, FourPairs )
 fourPairData =
     [ ( "loadKeys"
       , loadKeys msgBuf key16.forwardKey
-      , ( ( 257, 3 ), ( 1797, 519 ), ( 3337, 3083 ), ( 2829, 1551 ) )
+      , ( ( ( 257, 3 ), ( 1797, 519 ) ), ( ( 3337, 3083 ), ( 2829, 1551 ) ) )
       )
     ]
 

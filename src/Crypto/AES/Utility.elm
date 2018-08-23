@@ -10,10 +10,11 @@
 ----------------------------------------------------------------------
 
 
-module Crypto.AES.Utility exposing (..)
+module Crypto.AES.Utility exposing (arrayRotatePairsRight, byte0, byte1, byte2, byte3, cb, fillByteArrayFromWords, get, hexChars2Int, hexStr2Array, hexStr2Int, hibyte, lobyte, makeBytesFromWord, makeWord32, makeWord32FromByteArray, makeWordFromByteArray, makeword, rotWord32L, swapbytes, word0, word1, word32ArrayToWordArray)
 
 import Array exposing (Array, empty, fromList, length, repeat, set)
-import BitwiseInfix exposing (..)
+import Bitwise exposing (and, or, shiftLeftBy, shiftRightBy)
+import Hex
 
 
 {-| Out of bounds array references return 0.
@@ -31,22 +32,22 @@ get idx array =
 
 lobyte : Int -> Int
 lobyte x =
-    x ~& 255
+    and x 255
 
 
 hibyte : Int -> Int
 hibyte x =
-    (x ~>> 8) ~& 255
+    and (shiftRightBy 8 x) 255
 
 
 makeword : Int -> Int -> Int
 makeword hi lo =
-    (hi ~<< 8) + lo
+    shiftLeftBy 8 hi + lo
 
 
 swapbytes : Int -> Int
 swapbytes x =
-    ((x ~& 255) ~<< 8) ~| ((x ~>> 8) ~& 255)
+    or (shiftLeftBy 8 (and x 255)) (and (shiftRightBy 8 x) 255)
 
 
 byte0 =
@@ -59,30 +60,30 @@ byte1 =
 
 byte2 : Int -> Int
 byte2 x =
-    (x ~>> 16) ~& 255
+    and (shiftRightBy 16 x) 255
 
 
 byte3 : Int -> Int
 byte3 x =
-    (x ~>> 24) ~& 255
+    and (shiftRightBy 24 x) 255
 
 
 word0 : Int -> Int
 word0 x =
-    x ~& 65535
+    and x 65535
 
 
 word1 : Int -> Int
 word1 x =
-    (x ~>> 16) ~& 65535
+    and (shiftRightBy 16 x) 65535
 
 
 {-| rot-uint-32-L, but only handles n = 8
 -}
 rotWord32L : Int -> Int
 rotWord32L word =
-    ((word ~& 0x00FFFFFF) ~<< 8)
-        + ((word ~>> 24) ~& 0xFF)
+    shiftLeftBy 8 (and word 0x00FFFFFF)
+        + and (shiftRightBy 24 word) 0xFF
 
 
 {-| Returns new array with right byte rotation across two adjacent uint-16 values.
@@ -97,27 +98,27 @@ arrayRotatePairsRight gin =
             length gin
 
         loop : Int -> Array Int -> Array Int
-        loop =
-            \gi res ->
-                if gi >= gnumWords then
-                    res
-                else
-                    let
-                        gw1 =
-                            get gi gin
+        loop gi res =
+            if gi >= gnumWords then
+                res
 
-                        gw0 =
-                            get (gi + 1) gin
+            else
+                let
+                    gw1 =
+                        get gi gin
 
-                        gout =
-                            set gi
-                                (makeword (lobyte gw0) (hibyte gw1))
-                            <|
-                                set (gi + 1)
-                                    (makeword (lobyte gw1) (hibyte gw0))
-                                    res
-                    in
-                    loop (gi + 2) gout
+                    gw0 =
+                        get (gi + 1) gin
+
+                    gout =
+                        set gi
+                            (makeword (lobyte gw0) (hibyte gw1))
+                        <|
+                            set (gi + 1)
+                                (makeword (lobyte gw1) (hibyte gw0))
+                                res
+                in
+                loop (gi + 2) gout
     in
     loop 0 <| repeat gnumWords 0
 
@@ -129,8 +130,8 @@ arrayRotatePairsRight gin =
 
 
 hexStr2Int : String -> Result String Int
-hexStr2Int str =
-    String.toInt ("0x" ++ str)
+hexStr2Int =
+    Hex.fromString
 
 
 hexChars2Int : Char -> Char -> Result String Int
@@ -144,22 +145,21 @@ hexStr2Array : String -> Result String (Array Int)
 hexStr2Array string =
     let
         loop : List Char -> List Int -> Result String (Array Int)
-        loop =
-            \chars res ->
-                case chars of
-                    x :: y :: tail ->
-                        case hexChars2Int x y of
-                            Err msg ->
-                                Err msg
+        loop chars res =
+            case chars of
+                x :: y :: tail ->
+                    case hexChars2Int x y of
+                        Err msg ->
+                            Err msg
 
-                            Ok int ->
-                                loop tail <| int :: res
+                        Ok int ->
+                            loop tail <| int :: res
 
-                    [ _ ] ->
-                        Err "Odd length string."
+                [ _ ] ->
+                    Err "Odd length string."
 
-                    _ ->
-                        Ok (fromList <| List.reverse res)
+                _ ->
+                    Ok (fromList <| List.reverse res)
     in
     loop (String.toList string) []
 
@@ -190,9 +190,8 @@ fillByteArrayFromWords : List Int -> Array Int
 fillByteArrayFromWords words =
     let
         f : Int -> ( Int, Array Int ) -> ( Int, Array Int )
-        f =
-            \word ( idx, res ) ->
-                ( idx + 2, makeBytesFromWord word idx res )
+        f word ( idx, r ) =
+            ( idx + 2, makeBytesFromWord word idx r )
 
         out =
             repeat (2 * List.length words) 0
@@ -207,7 +206,7 @@ fillByteArrayFromWords words =
 -}
 makeWord32 : Int -> Int -> Int -> Int -> Int
 makeWord32 b3 b2 b1 b0 =
-    (b3 ~<< 24) + (b2 ~<< 16) + (b1 ~<< 8) + b0
+    shiftLeftBy 24 b3 + shiftLeftBy 16 b2 + shiftLeftBy 8 b1 + b0
 
 
 {-| make-uint-32-from-byte-array
@@ -233,12 +232,11 @@ word32ArrayToWordArray : Array Int -> Array Int
 word32ArrayToWordArray a =
     let
         f : Int -> ( Int, Array Int ) -> ( Int, Array Int )
-        f =
-            \ai ( j, res ) ->
-                ( j + 2
-                , set j (word1 ai) res
-                    |> set (j + 1) (word0 ai)
-                )
+        f ai ( j, r ) =
+            ( j + 2
+            , set j (word1 ai) r
+                |> set (j + 1) (word0 ai)
+            )
 
         out =
             repeat (2 * length a) 0
