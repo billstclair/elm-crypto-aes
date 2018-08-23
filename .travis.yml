@@ -15,15 +15,6 @@ env:
 
 before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-  - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
-    if [ ! -d sysconfcpus/bin ];
-    then
-      git clone https://github.com/obmarg/libsysconfcpus.git;
-      cd libsysconfcpus;
-      ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
-      make && make install;
-      cd ..;
-    fi
 
 install:
   - nvm install $TARGET_NODE_VERSION
@@ -34,4 +25,4 @@ install:
   - npm install -g elm-test@$ELM_TEST_VERSION
 
 script:
-  - elm make --yes && elm-test
+  - elm make && elm-test
