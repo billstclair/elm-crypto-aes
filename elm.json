@@ -3,7 +3,7 @@
     "name": "billstclair/elm-crypto-aes",
     "summary": "elm-crypto-aes is a pure Elm implementation of the Advanced Encryption Standard",
     "license": "MIT",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "exposed-modules": [
         "Crypto.AES"
     ],
