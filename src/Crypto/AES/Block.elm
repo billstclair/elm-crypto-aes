@@ -12,8 +12,8 @@
 
 module Crypto.AES.Block exposing (FourPairs, Keys, Pair, Quartet, Round, cryptor, decrypt, encrypt, expandKey, expandKeyInternal, expandKeyString, expandKeyStringNow, fRound, fillByteArrayFromFourPairs, fts_, lastFRound, lastRRound, lastRoundStep, loadKeys, prepareReverseKey, rRound, roundStep, rts_, validateKeyElements, zeroKeys)
 
-import Array exposing (Array, empty, fromList, length, repeat, set)
-import Bitwise exposing (shiftLeftBy, xor)
+import Array exposing (Array, empty, length, repeat, set)
+import Bitwise exposing (shiftLeftBy)
 import Crypto.AES.Tables exposing (..)
 import Crypto.AES.Utility exposing (..)
 import List.Extra as LE
@@ -71,9 +71,9 @@ prepareReverseKey fkey numRounds =
                         res
                             |> set (rix + i)
                                 (get (byte3 tmp) kt0_
-                                    |> xor (get (byte2 tmp) kt1_)
-                                    |> xor (get (byte1 tmp) kt2_)
-                                    |> xor (get (byte0 tmp) kt3_)
+                                    |> Bitwise.xor (get (byte2 tmp) kt1_)
+                                    |> Bitwise.xor (get (byte1 tmp) kt2_)
+                                    |> Bitwise.xor (get (byte0 tmp) kt3_)
                                 )
                 in
                 inner fix rix (i + 1) out
@@ -158,10 +158,10 @@ expandKeyInternal rawkey numWords numRounds =
             else
                 res
                     |> (set i <|
-                            xor (get (i - numWords) res)
+                            Bitwise.xor (get (i - numWords) res)
                                 (if 0 == modBy numWords i then
                                     get ((i // numWords) - 1) rcon_
-                                        |> xor
+                                        |> Bitwise.xor
                                             (subWord32
                                                 (rotWord32L <| get (i - 1) res)
                                             )
@@ -248,15 +248,15 @@ roundStep ( ( t0, t1 ), ( t2, t3 ) ) ( rkh, rkl ) ( ( b0, b1 ), ( b2, b3 ) ) =
             2 * b3
     in
     ( rkh
-        |> xor (get g0 t0)
-        |> xor (get g1 t1)
-        |> xor (get g2 t2)
-        |> xor (get g3 t3)
+        |> Bitwise.xor (get g0 t0)
+        |> Bitwise.xor (get g1 t1)
+        |> Bitwise.xor (get g2 t2)
+        |> Bitwise.xor (get g3 t3)
     , rkl
-        |> xor (get (1 + g0) t0)
-        |> xor (get (1 + g1) t1)
-        |> xor (get (1 + g2) t2)
-        |> xor (get (1 + g3) t3)
+        |> Bitwise.xor (get (1 + g0) t0)
+        |> Bitwise.xor (get (1 + g1) t1)
+        |> Bitwise.xor (get (1 + g2) t2)
+        |> Bitwise.xor (get (1 + g3) t3)
     )
 
 
@@ -265,11 +265,11 @@ roundStep ( ( t0, t1 ), ( t2, t3 ) ) ( rkh, rkl ) ( ( b0, b1 ), ( b2, b3 ) ) =
 lastRoundStep : Array Int -> Pair -> Quartet -> Pair
 lastRoundStep sb ( rkh, rkl ) ( ( b0, b1 ), ( b2, b3 ) ) =
     ( rkh
-        |> xor (shiftLeftBy 8 <| get b0 sb)
-        |> xor (get b1 sb)
+        |> Bitwise.xor (shiftLeftBy 8 <| get b0 sb)
+        |> Bitwise.xor (get b1 sb)
     , rkl
-        |> xor (shiftLeftBy 8 <| get b2 sb)
-        |> xor (get b3 sb)
+        |> Bitwise.xor (shiftLeftBy 8 <| get b2 sb)
+        |> Bitwise.xor (get b3 sb)
     )
 
 
@@ -419,7 +419,7 @@ loadKeys ina keys =
         getOne : Int -> Int
         getOne idx =
             get idx keys
-                |> xor (makeWordFromByteArray (2 * idx) ina)
+                |> Bitwise.xor (makeWordFromByteArray (2 * idx) ina)
 
         f : Int -> List Pair -> List Pair
         f idx res =
